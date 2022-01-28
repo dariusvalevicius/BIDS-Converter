@@ -1,0 +1,134 @@
+{
+    "name": "BIDSConverter",
+    "description": "Converts arbitrary file collection containing one subject's data into BIDS format",
+    "tool-version": "v0.1.0",
+    "schema-version": "0.5",
+    "command-line": "python bids_converter.py [INPUT] [SUBJECT] [SESSIONS] [TASKS] [ANAT] [T1W] [FUNC] [BOLD] [PHYSIO] [NOCOMPRESS]",
+    "container-image": {
+        "image": "user/image",
+        "index": "docker://",
+        "type": "singularity"
+    },
+    "inputs": [
+        {
+            "command-line-flag": "-i",
+            "id": "input",
+            "name": "Input",
+            "optional": false,
+            "type": "File",
+            "value-key": "[INPUT]",
+            "description": "Input file collection containing all subject data."
+        },
+        {
+            "command-line-flag": "-s",
+            "id": "subject",
+            "name": "Subject number",
+            "optional": true,
+            "type": "String",
+            "value-key": "[SUBJECT]",
+            "description": "Subject number.\nIf not declared, will try to extract from input folder name."
+        },
+        {
+            "command-line-flag": "--sessions",
+            "id": "sessions",
+            "name": "Session identifiers",
+            "optional": true,
+            "type": "String",
+            "value-key": "[SESSIONS]",
+            "description": "Strings indentifying sessions.\nEnclose multiple strings in curly braces {}, and separate with commas (no spaces).\nIf different modalities identify sessions with different strings, add equivalent sets after a semicolon (;)."
+        },
+        {
+            "command-line-flag": "-t",
+            "id": "tasks",
+            "name": "Task identifiers",
+            "optional": true,
+            "type": "String",
+            "value-key": "[TASKS]",
+            "description": "Strings indentifying tasks.\nEnclose multiple strings in curly braces {}, and separate with commas (no spaces).\nIf different modalities identify tasks with different strings, add equivalent sets after a semicolon (;)."
+        },
+        {
+            "command-line-flag": "-a",
+            "id": "anat",
+            "name": "Anatomical data",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[ANAT]",
+            "description": "Are anatomical data included?"
+        },
+        {
+            "command-line-flag": "--t1w",
+            "id": "t1w",
+            "name": "T1W identifiers",
+            "optional": true,
+            "requires-inputs": [
+                "anat"
+            ],
+            "type": "String",
+            "value-key": "[T1W]",
+            "description": "Shell-type expressions identifying T1W images. Enclose multiple expressions in braces {} and separate with commas (,)."
+        },
+        {
+            "command-line-flag": "-f",
+            "id": "func",
+            "name": "Functional data",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[FUNC]",
+            "description": "Are functional data included?"
+        },
+        {
+            "command-line-flag": "-b",
+            "id": "bold",
+            "name": "BOLD data identifiers",
+            "optional": true,
+            "requires-inputs": [
+                "func"
+            ],
+            "type": "String",
+            "value-key": "[BOLD]",
+            "description": "Shell-type expressions identifying BOLD images. Enclose multiple expressions in braces {} and separate with commas (,)."
+        },
+        {
+            "command-line-flag": "-p",
+            "id": "physio",
+            "name": "Physiological recording identifiers",
+            "optional": true,
+            "requires-inputs": [
+                "func"
+            ],
+            "type": "String",
+            "value-key": "[PHYSIO]",
+            "description": "Shell-type expressions identifying physiological recordings. Enclose multiple expressions in braces {} and separate with commas (,)."
+        },
+        {
+            "command-line-flag": "--nocompress",
+            "id": "nocompress",
+            "name": "Compression flag (for testing)",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[NOCOMPRESS]",
+            "description": "Check this to skip file compression. Useful for saving time during testing."
+        }
+    ],
+    "tags": {
+        "domain": [
+            "neuroinformatics",
+            "fMRI",
+            "neuroimaging"
+        ]
+    },
+    "suggested-resources": {
+        "cpu-cores": 1,
+        "ram": 1,
+        "walltime-estimate": 60
+    },
+    "error-codes": [
+        {
+            "code": 1,
+            "description": "Crashed"
+        }
+    ],
+    "custom": {
+        "cbrain:readonly-input-files": true
+    }
+}
