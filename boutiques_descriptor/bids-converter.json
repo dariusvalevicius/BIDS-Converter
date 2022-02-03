@@ -4,7 +4,7 @@
     "description": "Converts arbitrary file collection containing one subject's data into BIDS format",
     "tool-version": "v0.1.0",
     "schema-version": "0.5",
-    "command-line": "python /app/bids_converter.py [INPUT] [SUBJECT] [SESSIONS] [RUNS] [TASKS] [TASK_SUFFIXES] [ANAT] [T1W] [T2W] [FUNC] [BOLD] [PHYSIO] [NOCOMPRESS]",
+    "command-line": "python /app/bids_converter.py [INPUT] [SUBJECT] [SESSIONS] [RUNS] [TASKS] [TASK_SUFFIXES] [ACQ] [ACQ_SUFFIXES] [ANAT] [T1W] [T2W] [FLAIR] [FUNC] [BOLD] [ASL] [PHYSIO] [DWI] [DWI_STRINGS] [NOCOMPRESS]",
     "container-image": {
         "image": "dvalev/bids-converter",
         "index": "docker://",
@@ -45,7 +45,7 @@
             "optional": true,
             "type": "String",
             "value-key": "[RUNS]",
-            "description": "Strings indentifying runs.\nEnclose multiple strings in curly braces {}, and separate with commas (no spaces).\nIf different modalities identify sessions with different strings, add equivalent sets after a semicolon (;)."
+            "description": "Strings indentifying runs."
         },
         {
             "command-line-flag": "--tasks",
@@ -54,7 +54,7 @@
             "optional": true,
             "type": "String",
             "value-key": "[TASKS]",
-            "description": "Strings indentifying tasks.\nEnclose multiple strings in curly braces {}, and separate with commas (no spaces).\nIf different modalities identify tasks with different strings, add equivalent sets after a semicolon (;)."
+            "description": "Strings indentifying tasks.\nSeparate multiple strings with commas (no spaces).\nIf different modalities identify sessions with different strings, add equivalent sets after a semicolon (;)."
         },
         {
             "command-line-flag": "--task_suffixes",
@@ -63,10 +63,28 @@
             "optional": true,
             "type": "String",
             "value-key": "[TASK_SUFFIXES]",
-            "description": "Strings indentifying sessions.\nEnclose multiple strings in curly braces {}, and separate with commas (no spaces).\nIf different modalities identify sessions with different strings, add equivalent sets after a semicolon (;)."
+            "description": "Desired task suffixes. Order and quantity must match a single set as entered in 'Task Identifiers'."
         },
         {
-            "command-line-flag": "-a",
+            "command-line-flag": "--acq",
+            "id": "acq",
+            "name": "Acquisition identifiers",
+            "optional": true,
+            "type": "String",
+            "value-key": "[ACQ]",
+            "description": "Strings indentifying acquisitions.\nSeparate multiple strings with commas (no spaces).\nIf different modalities identify sessions with different strings, add equivalent sets after a semicolon (;)."
+        },
+        {
+            "command-line-flag": "--acq_suffixes",
+            "id": "acq_suffixes",
+            "name": "Desired acquisition suffixes",
+            "optional": true,
+            "type": "String",
+            "value-key": "[ACQ_SUFFIXES]",
+            "description": "Desired acquisition suffixes. Order and quantity must match a single set as entered in 'Acquisition Identifiers'."
+        },
+        {
+            "command-line-flag": "--anat",
             "id": "anat",
             "name": "Anatomical data",
             "optional": true,
@@ -84,7 +102,7 @@
             ],
             "type": "String",
             "value-key": "[T1W]",
-            "description": "Shell-type expressions identifying T1W images. Enclose multiple expressions in braces {} and separate with commas (,)."
+            "description": "String indentifying T1w images."
         },
         {
             "command-line-flag": "--t2w",
@@ -95,11 +113,23 @@
                 "anat"
             ],
             "type": "String",
-            "value-key": "[T1W]",
-            "description": "Shell-type expressions identifying T2W images. Enclose multiple expressions in braces {} and separate with commas (,)."
+            "value-key": "[T2W]",
+            "description": "String identifying T2w images."
         },
         {
-            "command-line-flag": "-f",
+            "command-line-flag": "--flair",
+            "id": "flair",
+            "name": "FLAIR identifiers",
+            "optional": true,
+            "requires-inputs": [
+                "anat"
+            ],
+            "type": "String",
+            "value-key": "[FLAIR]",
+            "description": "String identifying FLAIR images."
+        },
+        {
+            "command-line-flag": "--func",
             "id": "func",
             "name": "Functional data",
             "optional": true,
@@ -108,7 +138,7 @@
             "description": "Are functional data included?"
         },
         {
-            "command-line-flag": "-b",
+            "command-line-flag": "--bold",
             "id": "bold",
             "name": "BOLD data identifiers",
             "optional": true,
@@ -117,10 +147,10 @@
             ],
             "type": "String",
             "value-key": "[BOLD]",
-            "description": "Shell-type expressions identifying BOLD images. Enclose multiple expressions in braces {} and separate with commas (,)."
+            "description": "String identifying BOLD images."
         },
         {
-            "command-line-flag": "-p",
+            "command-line-flag": "--physio",
             "id": "physio",
             "name": "Physiological recording identifiers",
             "optional": true,
@@ -129,7 +159,40 @@
             ],
             "type": "String",
             "value-key": "[PHYSIO]",
-            "description": "Shell-type expressions identifying physiological recordings. Enclose multiple expressions in braces {} and separate with commas (,)."
+            "description": "String identifying physiological recordings."
+        },
+        {
+            "command-line-flag": "--asl",
+            "id": "asl",
+            "name": "ASL data identifiers",
+            "optional": true,
+            "requires-inputs": [
+                "func"
+            ],
+            "type": "String",
+            "value-key": "[ASL]",
+            "description": "String identifying ASL images."
+        },
+        {
+            "command-line-flag": "--dwi",
+            "id": "dwi",
+            "name": "DWI data",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[DWI]",
+            "description": "Are DWI images included?"
+        },
+        {
+            "command-line-flag": "--dwi_strings",
+            "id": "dwi_strings",
+            "name": "DWI data identifiers",
+            "optional": true,
+            "requires-inputs": [
+                "dwi"
+            ],
+            "type": "String",
+            "value-key": "[DWI_STRINGS]",
+            "description": "String identifying DWI images."
         },
         {
             "command-line-flag": "--nocompress",
@@ -139,6 +202,36 @@
             "type": "Flag",
             "value-key": "[NOCOMPRESS]",
             "description": "Check this to skip file compression. Useful for saving time during testing."
+        }
+    ],
+    "groups": [
+        {
+            "id": "anat_group",
+            "members": [
+                "anat",
+                "t1w",
+                "t2w",
+                "flair"
+            ],
+            "name": "Anatomical images"
+        },
+        {
+            "id": "func_group",
+            "members": [
+                "func",
+                "bold",
+                "asl",
+                "physio"
+            ],
+            "name": "Functional images"
+        },
+        {
+            "id": "dwi_group",
+            "members": [
+                "dwi",
+                "dwi_strings"
+            ],
+            "name": "DWI images"
         }
     ],
     "tags": {

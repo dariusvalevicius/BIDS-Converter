@@ -1,14 +1,8 @@
-./test.sh -i PP02 -a *{hires,std}*.nii -f *BOLD*.nii -p *PIJN.log -t {Control,Spinal}
 
-python bidsify.py -i PP02 -s 2 --sessions '{Control,Spinal}' -a -f -b *BOLD*.nii -p *PIJN.log -t '{pre,post}'
-
-python bidsify.py -i PP02 -s 2 --sessions '{Control,Spinal}' -a --t1w '{*PACS*.nii,*fMRI*.nii}' -f -b *BOLD*.nii -p *PIJN.log -t '{pre,post}'
-
-python bidsify.py -i PP02 -s 2 --sessions '{Control,Spinal};{PLCB,SPINAAL}' -a --t1w '{*PACS*.nii,*fMRI*.nii}' -f -b *BOLD*.nii -p *PIJN.log -t '{pre,post}'
-
-python bidsify.py -i PP02 -s 2 --sessions '{Control,Spinal};{PLCB,SPINAAL}' -a --t1w '{*PACS*.nii,*SENSE*.nii}' -f -b *BOLD*.nii -p *PIJN.log -t '{pre,post}' --nocompress
-
-python bids_converter.py -i spinaal3 -s 3 -a --t1w '{*hires_*.nii.gz,*hires1_*.nii.gz,*hires2_*.nii.gz,*PACS*.nii.gz}' -f -b *resting*.nii.gz -p Restingstate.log -t '{pre,post1,post2}' --nocompress
 
 
 python bids_converter.py -i PP02 -s 2 --sessions 'Control,Spinal;PLCB,SPINAAL' -a --t1w PACS --t2w SENSE -f -b BOLD -p PIJN -t 'pre,post' --task_suffixes 'preint,postint' --nocompress
+
+python bids_converter.py -i spinaal3 -s 3 -a --t1w PACS --t2w hires --acq 'hires,hires1,hires2' --acq_suffixes '00,01,02' -f -b 'resting_' -p 'Restingstate' --tasks 'pre,post1,post2' --task_suffixes 'pre,post1,post2' --nocompress
+
+python bids_converter.py --input safa_sub01 --subject 1 --sessions 'sess1,sess2' -a -f --asl 'ASL' --t1w 'T1' --acq 'ASL_001,ASL_bet' --acq_suffixes 'raw,clean' --nocompress
