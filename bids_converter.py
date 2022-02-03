@@ -3,11 +3,21 @@ import os
 import argparse
 import shutil
 import gzip
-import fnmatch
 from glob import glob
-from braceexpand import braceexpand
+
+## TODO
+
+# Implement
+    # Echo?
+    # CE?
+# Additional subdirectories and modality support:
+    # FMAP?
+# Stretch goals:
+    # Metadata/json headers
+
 
 # Argument parser
+print('Parsing arguments...')
 
 parser = argparse.ArgumentParser(
     description='Convert an arbitrarily structured brain imaging dataset to BIDS format')
@@ -17,20 +27,40 @@ parser.add_argument('-s', '--subject', type=str,
                     metavar='', help='Subject number')
 parser.add_argument('--sessions', type=str, metavar='',
                     help='Strings identifying sessions')
+parser.add_argument('-r', '--runs', type=str, metavar='',
+                    help='Strings identifying runs')
 parser.add_argument('-t', '--tasks', type=str, metavar='',
                     help='Strings identifying tasks')
+parser.add_argument('--task_suffixes', type=str, metavar='',
+                    help='Strings identifying tasks')
+parser.add_argument('--acq', type=str, metavar='',
+                    help='Strings identifying acquisitions')
+parser.add_argument('--acq_suffixes', type=str, metavar='',
+                    help='Strings identifying acquisition suffixes')
+
 
 parser.add_argument('-a', '--anat', default=False,
                     action='store_true', help='Presence of anatomical data')
 parser.add_argument('--t1w', type=str, metavar='',
                     help='Shell-type expression identifying T1 weighted images')
+parser.add_argument('--t2w', type=str, metavar='',
+                    help='Shell-type expression identifying T2 weighted images')
+parser.add_argument('--flair', type=str, metavar='',
+                    help='Shell-type expression identifying FLAIR images')
 
 parser.add_argument('-f', '--func', default=False,
                     action='store_true', help='Presence of functional data')
 parser.add_argument('-b', '--bold', type=str, metavar='',
                     help='Shell-type expression describing BOLD data files')
+parser.add_argument('--asl', type=str, metavar='',
+                    help='Shell-type expression describing ASL data files')
 parser.add_argument('-p', '--physio', type=str, metavar='',
                     help='Shell-type expression describing physiological data files')
+
+parser.add_argument('-d', '--dwi', default=False,
+                    action='store_true', help='Presence of DWI images')
+parser.add_argument('--dwi_strings', type=str, metavar='',
+                    help='Shell-type expression identifying WDI images')
 
 parser.add_argument('--nocompress', default=False,
                     action='store_true', help='Turn off gzip compression, saves time while testing')
@@ -38,13 +68,23 @@ parser.add_argument('--nocompress', default=False,
 
 args = parser.parse_args()
 
+print('Done.')
+
+
+# Declare global vars
+
+entity_dict = {} # Stores input strings as keys and BIDS entities as values
+subject_folder = ''
+session_folders = []
+
 # Define helper functions
 
 # Create modality folder
 # If there are sessions, nest within sessions
+def create_modality_dir(modality_exists, folder_name):
 
-
-def create_modality_dir(session_folders, folder_name):
+    if not modality_exists:
+        return
 
     if session_folders:
         for folder in session_folders:
@@ -53,57 +93,88 @@ def create_modality_dir(session_folders, folder_name):
         os.mkdir(os.path.join(subject_folder, folder_name))
 
 
-def get_session_substr(session_strings, file, this_session):
-    # If sessions and tasks are input,
-    # get the session and task for this file
-    for session in (session_string.casefold() for session_string in session_strings):
-        if session in file.casefold():
-            this_session = session_dict[session] + '_'
-    
-    return this_session
-
-def get_task_substr(task_strings, file, this_task):
-    # Gets task for this file
-    for task in (task_string.casefold() for task_string in task_strings):
-        if task in file.casefold():
-            this_task = 'task-' + task + '_'
-
-    return this_task
-
-
-def get_session_task(session_strings, task_strings, file):
-    # As in, "get session and task" for a single file
-    # Calls individual session and task functions dependent on arguments
-    this_session = ''
-    if args.sessions:
-        this_session = get_session_substr(session_strings, file, this_session)
-
-    this_task = ''
-    if args.tasks:
-        this_task = get_task_substr(task_strings, file, this_task)
-
-    return this_session, this_task
-
 
 def compress_nii(file_path):
     # If .nii is uncompressed, compress
     if (not '.gz' in file_path) and (not args.nocompress):
         with open(file_path, 'rb') as f_in:
-            with gzip.open(file_path + '.gz', 'wb') as f_out:
+            with gzip.open(file_path + '.gz', 'wb', compresslevel=3) as f_out:
                 shutil.copyfileobj(f_in, f_out)
         os.remove(file_path)
 
-def get_modality_files(identifier):
-    # Glob files in input directory matching identifier
-    files = glob(args.input + '/**/' + identifier, recursive=True)
-    return files
+
+def populate_dict(entity_identifier, entity_prefix, entity_suffix=''):
+
+    # If argument is blank, exit function
+    if not entity_identifier:
+        return
+    
+    # loop through input sets separated by semicolons
+    sets = entity_identifier.split(';')
+    for set in sets:
+
+        # Loop through keys within sets
+        keys = set.split(',')
+
+        index = 0
+        for key in keys:
+            # construct appropriate BIDS entity string
+            if (entity_suffix):
+                entity_suffix_list = entity_suffix.split(',')
+                entity_dict[key.casefold()] =  entity_prefix + '-' + entity_suffix_list[index]
+            else:
+                entity_dict[key.casefold()] =  entity_prefix + '-' + str((index + 1))
+
+            index += 1
+  
+
+def copy_modality_files(modality, identifier, category):
+
+    # if argument is empty, return
+    if not identifier:
+        return
+
+    # Find all files with identifier
+    source_files = glob(args.input + '/**/*' + identifier + '*', recursive=True)
+
+    # For each file of modality
+    for source_file in source_files:
+
+        # Find which entities are present
+        # This_entities stores values of present entities
+        this_entities = {}
+        entity_strings = ['ses', 'task', 'acq', 'run']
+
+        for key in entity_dict:
+            if key in source_file.casefold():
+                value =  entity_dict.get(key).split('-')[0]
+                #print('value:')
+                #print(value)
+                for entity_string in entity_strings:
+                    if value == entity_string:
+                        this_entities[entity_string] = entity_dict[key] + '_'
+
+        entity_string = this_entities.get('ses', "") + this_entities.get('task', "") + this_entities.get('acq', "") + this_entities.get('run', "")
+        ext = os.path.splitext(source_file)[1]
+        #print('ext: ')
+        #print(ext)
+        dest_filename = subject_folder + '_' + entity_string + modality + ext
+        dest_filepath = os.path.join(subject_folder, this_entities.get('ses', "").strip('_'), category, dest_filename)
+
+        # copy file
+        shutil.copy(source_file, dest_filepath)
+
+        if '.nii' in dest_filepath:
+            compress_nii(dest_filepath)
 
 
 # Main
 if __name__ == '__main__':
 
-    for arg in vars(args):
-        print(arg, getattr(args, arg))
+    #for arg in vars(args):
+    #    print(arg, getattr(args, arg))
+
+    print('Creating subject folder...')
 
     # Get subject number
     subject_num = ''
@@ -113,6 +184,7 @@ if __name__ == '__main__':
         subject_num = args.subject.zfill(2)
     else:
         # Else, try to extract from input foldername
+        print('Subject number not explicitly declared. Attempting to extract from input foldername...')
         extracted_num = ''
         for m in args.input:
             if m.isdigit():
@@ -121,8 +193,8 @@ if __name__ == '__main__':
             print('Error! Did not find subject number in folder name.')
             # throw error
         subject_num = extracted_num.zfill(2)
-        print('subject num:')
-        print(subject_num)
+        #print('subject num:')
+        #print(subject_num)
 
     # Create top-level subject folder
     subject_folder = 'sub-' + subject_num
@@ -133,121 +205,84 @@ if __name__ == '__main__':
 
     os.mkdir(subject_folder)
 
+    print('Done.')
+
     # If sessions were input, create a list of sessions and
     # a folder for each one.
     # Also create a dictionary mapping session strings to session directory names.
-    session_strings = []
     session_folders = []
 
     if args.sessions:
-        session_dict = {}
+        print('Creating session folders...')
         session_string_sets = args.sessions.split(';')
-        print(session_string_sets)
+        # print(session_string_sets)
 
-        set = 0
-        for session_string_set in session_string_sets:
-            this_session_strings = list(braceexpand(session_string_set))
-            session_strings += this_session_strings
-            print('session strings:')
-            print(session_strings)
-            index = 0
-            # create dictionary
-            # print(session_strings)
-            # print(len(session_strings))
-            for session in this_session_strings:
-                # add folder name to dictionary
-                subdir_name = 'ses-' + str(index + 1)
-                session_dict[this_session_strings[index].casefold()] = subdir_name.casefold()
+        index = 0
+        for session in session_string_sets[0].split(','):
+            subdir_name = 'ses-' + str(index + 1)
 
-                if set == 0:
-                    session_folders.append(os.path.join(subject_folder, subdir_name))
-                    os.mkdir(session_folders[index])
+            session_folders.append(os.path.join(subject_folder, subdir_name))
+            os.mkdir(session_folders[index])
 
-                index += 1
-            set += 1
-
-        print(session_dict)
-
-    # If tasks were input,
-    # get list of tasks
-    task_strings = ''
-    if args.tasks:
-        task_strings = list(braceexpand(args.tasks))
-
-    # If func is true...
-    if args.func:
-
-        # Create func directory
-        # If sessions is true, nest within session folders
-        create_modality_dir(session_folders, 'func')
-
-        # If bold identifier was input, copy bold files
-        if args.bold:
-            bold_files = get_modality_files(args.bold)
-            print(bold_files)
-            for bold_file in bold_files:
-                # Get .nii file extension
-                ext = os.path.splitext(bold_file)[1]
-
-                # Get session and task
-                this_session, this_task = get_session_task(session_strings, task_strings, bold_file)
-
-                # Copy file
-                file_name = subject_folder + '_' + this_session + this_task + 'bold' + ext
-                file_path = os.path.join(
-                    subject_folder, this_session[:-1], 'func', file_name)
-
-                shutil.copy(bold_file, file_path)
-                compress_nii(file_path)
+            index += 1
+        print('Done.')
 
 
-        if args.physio:
-            physio_files = get_modality_files(args.physio)
-            print(physio_files)
-            for physio_file in physio_files:
-                
-                ext = os.path.splitext(physio_file)[1]
+    print('Creating modality subfolders...')
+    # create modality folders
 
-                this_session, this_task = get_session_task(session_strings, task_strings, physio_file)
+    modality_subdirs = [
+        [args.anat, 'anat'],
+        [args.func, 'func'],
+        [args.dwi, 'dwi']
+        ]
 
-                # Copy file
-                file_name = subject_folder + '_' + this_session + this_task + 'physio' + ext
-                file_path = os.path.join(
-                    subject_folder, this_session[:-1], 'func', file_name)
+    for subdir in modality_subdirs:
+        create_modality_dir(subdir[0], subdir[1])
 
-                print(file_path)
+    print('Done.')
 
-                shutil.copy(physio_file, file_path)
-                
+    print('Creating BIDS entity dictionary...')
+    # collect up all entities
+    arg_list = [
+        [args.sessions, 'ses', ''],
+        [args.tasks, 'task', args.task_suffixes],
+        [args.runs, 'run', ''],
+        [args.acq, 'acq', args.acq_suffixes],
+        ]
 
-    if args.anat:
+    # Populate entity dictionary using input strings
+    for arg_set in arg_list:
+        populate_dict(arg_set[0], arg_set[1], arg_set[2])
 
-        create_modality_dir(session_folders, 'anat')
+    print('Done.')
+    print('Entity dictionary:')
+    for key in entity_dict:
+        print('Key: ' + key + '\t Value: ' + entity_dict.get(key, 'None').strip('_'))
 
-        if args.t1w:
-            t1w_strings = list(braceexpand(args.t1w))
-            print('t1w_strings:')
-            print(t1w_strings)
-            for t1w_string in t1w_strings:
-                print(t1w_string)
-                t1w_files = get_modality_files(t1w_string)
-                print('t1w_files:')
-                print(t1w_files)
 
-                for t1w_file in t1w_files:
-                    ext = os.path.splitext(t1w_file)[1]
+    modalities = [
+        ['T1w', args.t1w, 'anat'],
+        ['T2w', args.t2w, 'anat'],
+        ['FLAIR', args.flair, 'anat'],
+        ['BOLD', args.bold, 'func'],
+        ['ASL', args.asl, 'func'],
+        ['physio', args.physio, 'func'],
+        ['DWI', args.dwi, 'dwi']
+    ]
 
-                    this_session, this_task = get_session_task(session_strings, task_strings, t1w_file)
+    print('Modality identifiers:')
+    for md in modalities:
+        if md[1]:
+            print('Modality: ' + md[0] + '\tIdentifier: ' + md[1])
 
-                    # Copy file
-                    file_name = subject_folder + '_' + this_session + this_task + 'acq-' + t1w_string.split('.')[0].strip('*').strip('_').casefold() + '_' + 't1w' + ext
 
-                    file_path = os.path.join(
-                        subject_folder, this_session[:-1], 'anat', file_name)
-                    print(file_path)
+    print('NIFTI compression is set to ' + str(not args.nocompress) + '.')
 
-                    shutil.copy(t1w_file, file_path)
+    print('Copying files...')
 
-                    compress_nii(file_path)
+    for modality in modalities:
+        copy_modality_files(modality[0], modality[1], modality[2])
 
-                    
+    print('Done.')
+

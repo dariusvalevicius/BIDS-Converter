@@ -1,0 +1,14 @@
+{
+    "input": "PP02",
+    "subject": "2",
+    "sessions": "Control,Spinal;PLCB,SPINAAL",
+    "anat": true,
+    "t1w": "PACS",
+    "t2w": "SENSE",
+    "func": true,
+    "bold": "BOLD",
+    "physio": "PIJN",
+    "tasks": "pre,post",
+    "task_suffixes": "pre,post",
+    "nocompress": true
+}

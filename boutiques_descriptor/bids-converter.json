@@ -1,17 +1,18 @@
 {
-    "name": "BIDSConverter",
+    "name": "BIDS-Converter",
+    "author": "Darius Valevicius",
     "description": "Converts arbitrary file collection containing one subject's data into BIDS format",
     "tool-version": "v0.1.0",
     "schema-version": "0.5",
-    "command-line": "python bids_converter.py [INPUT] [SUBJECT] [SESSIONS] [TASKS] [ANAT] [T1W] [FUNC] [BOLD] [PHYSIO] [NOCOMPRESS]",
+    "command-line": "python /app/bids_converter.py [INPUT] [SUBJECT] [SESSIONS] [RUNS] [TASKS] [TASK_SUFFIXES] [ANAT] [T1W] [T2W] [FUNC] [BOLD] [PHYSIO] [NOCOMPRESS]",
     "container-image": {
-        "image": "user/image",
+        "image": "dvalev/bids-converter",
         "index": "docker://",
-        "type": "singularity"
+        "type": "docker"
     },
     "inputs": [
         {
-            "command-line-flag": "-i",
+            "command-line-flag": "--input",
             "id": "input",
             "name": "Input",
             "optional": false,
@@ -20,7 +21,7 @@
             "description": "Input file collection containing all subject data."
         },
         {
-            "command-line-flag": "-s",
+            "command-line-flag": "--subject",
             "id": "subject",
             "name": "Subject number",
             "optional": true,
@@ -35,16 +36,34 @@
             "optional": true,
             "type": "String",
             "value-key": "[SESSIONS]",
-            "description": "Strings indentifying sessions.\nEnclose multiple strings in curly braces {}, and separate with commas (no spaces).\nIf different modalities identify sessions with different strings, add equivalent sets after a semicolon (;)."
+            "description": "Strings indentifying sessions.\nSeparate multiple strings with commas (no spaces).\nIf different modalities identify sessions with different strings, add equivalent sets after a semicolon (;)."
         },
         {
-            "command-line-flag": "-t",
+            "command-line-flag": "--runs",
+            "id": "runs",
+            "name": "Run identifiers",
+            "optional": true,
+            "type": "String",
+            "value-key": "[RUNS]",
+            "description": "Strings indentifying runs.\nEnclose multiple strings in curly braces {}, and separate with commas (no spaces).\nIf different modalities identify sessions with different strings, add equivalent sets after a semicolon (;)."
+        },
+        {
+            "command-line-flag": "--tasks",
             "id": "tasks",
             "name": "Task identifiers",
             "optional": true,
             "type": "String",
             "value-key": "[TASKS]",
             "description": "Strings indentifying tasks.\nEnclose multiple strings in curly braces {}, and separate with commas (no spaces).\nIf different modalities identify tasks with different strings, add equivalent sets after a semicolon (;)."
+        },
+        {
+            "command-line-flag": "--task_suffixes",
+            "id": "task_suffixes",
+            "name": "Desired task suffixes",
+            "optional": true,
+            "type": "String",
+            "value-key": "[TASK_SUFFIXES]",
+            "description": "Strings indentifying sessions.\nEnclose multiple strings in curly braces {}, and separate with commas (no spaces).\nIf different modalities identify sessions with different strings, add equivalent sets after a semicolon (;)."
         },
         {
             "command-line-flag": "-a",
@@ -58,7 +77,7 @@
         {
             "command-line-flag": "--t1w",
             "id": "t1w",
-            "name": "T1W identifiers",
+            "name": "T1w identifiers",
             "optional": true,
             "requires-inputs": [
                 "anat"
@@ -66,6 +85,18 @@
             "type": "String",
             "value-key": "[T1W]",
             "description": "Shell-type expressions identifying T1W images. Enclose multiple expressions in braces {} and separate with commas (,)."
+        },
+        {
+            "command-line-flag": "--t2w",
+            "id": "t2w",
+            "name": "T2w identifiers",
+            "optional": true,
+            "requires-inputs": [
+                "anat"
+            ],
+            "type": "String",
+            "value-key": "[T1W]",
+            "description": "Shell-type expressions identifying T2W images. Enclose multiple expressions in braces {} and separate with commas (,)."
         },
         {
             "command-line-flag": "-f",
@@ -113,7 +144,7 @@
     "tags": {
         "domain": [
             "neuroinformatics",
-            "fMRI",
+            "BIDS",
             "neuroimaging"
         ]
     },
