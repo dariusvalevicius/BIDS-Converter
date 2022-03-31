@@ -1,14 +1,12 @@
 {
     "input": "PP02",
+    "output_prefix": "test",
     "subject": "2",
-    "sessions": "Control,Spinal;PLCB,SPINAAL",
-    "anat": true,
+    "session": "Control,Spinal;PLCB,SPINAAL",
     "t1w": "PACS",
     "t2w": "SENSE",
-    "func": true,
     "bold": "BOLD",
     "physio": "PIJN",
-    "tasks": "pre,post",
-    "task_suffixes": "pre,post",
-    "nocompress": true
+    "task": "pre,post",
+    "task_labels": "pre,post"
 }

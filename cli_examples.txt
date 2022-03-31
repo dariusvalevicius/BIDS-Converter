@@ -1,8 +1,39 @@
 
 
 
-python bids_converter.py -i PP02 -s 2 --sessions 'Control,Spinal;PLCB,SPINAAL' -a --t1w PACS --t2w SENSE -f -b BOLD -p PIJN -t 'pre,post' --task_suffixes 'preint,postint' --nocompress
+
+
+
+python bids_converter.py -i PP02 -s 2 --sessions 'Control,Spinal;PLCB,SPINAAL' -a --t1w PACS --t2w SENSE -f -b BOLD -p PIJN -t 'pre,post' --task_suffixes 'pre,post' --nocompress
 
 python bids_converter.py -i spinaal3 -s 3 -a --t1w PACS --t2w hires --acq 'hires,hires1,hires2' --acq_suffixes '00,01,02' -f -b 'resting_' -p 'Restingstate' --tasks 'pre,post1,post2' --task_suffixes 'pre,post1,post2' --nocompress
 
-python bids_converter.py --input safa_sub01 --subject 1 --sessions 'sess1,sess2' -a -f --asl 'ASL' --t1w 'T1' --acq 'ASL_001,ASL_bet' --acq_suffixes 'raw,clean' --nocompress
+python bids_converter.py --input safa_sub01 --subject 1 --sessions 'sess1,sess2' --anat --func --asl 'ASL' --t1w 'T1' --acq 'ASL_001,ASL_bet' --acq_suffixes 'raw,clean' --nocompress
+
+
+
+python bids_converter.py --input test_data/PP02 --subject 2 --session 'Control,Spinal;PLCB,SPINAAL' --t1w PACS --t2w SENSE --bold BOLD --physio PIJN --task 'pre,post' --task_labels 'pre,post' --nocompress
+
+python bids_converter.py --input spinaal3 --subject 3 --t1w PACS --t2w hires --acq 'hires,hires1,hires2' --acq_suffixes '00,01,02' --bold 'resting_' --physio 'Restingstate' --tasks 'pre,post1,post2' --task_suffixes 'pre,post1,post2' --nocompress
+
+python bids_converter.py --input safa_sub01 --subject 1 --sessions 'sess1,sess2' --asl 'ASL' --t1w 'T1' --acq 'ASL_001,ASL_bet' --acq_suffixes 'raw,clean' --nocompress
+
+
+DTI
+ASL
+ANAT
+EEG
+FUNC
+PHYSIO
+DWI
+CRV
+MRA
+MRS
+FMAP
+
+Fails:
+1. wrong user input
+	- throw warning if insufficient arguments to create unique string for each file
+2. missing data
+	- throw warning if symmetry is broken
+

@@ -1,0 +1,816 @@
+{
+    "name": "tool name",
+    "description": "tool description",
+    "tool-version": "v0.1.0",
+    "schema-version": "0.5",
+    "command-line": "python /app/bids-converter.py [INPUT] [OUTDIR] [SUBJECT] [SESSION] [SESSION_LABELS] [SESSION_USE_INDEX] [TASK] [TASK_LABELS] [RUN] [ACQ] [ACQ_LABELS] [CE] [CE_LABELS] [TRC] [TRC_LABELS] [REC] [REC_LABELS] [DIR] [DIR_LABELS] [MOD] [MOD_LABELS] [ECHO] [ECHO_VALUES] [FLIP] [FLIP_VALUES] [INV] [INV_VALUES] [MT] [MT_LABELS] [PART] [PART_LABELS] [RECORDING] [RECORDING_LABELS] [T1W] [T2W] [T1RHO] [T1MAP] [T2MAP] [T2STAR] [FLAIR] [FLASH] [PD] [PDMAP] [PDT2] [INPLANET1] [INPLANET2] [ANGIO] [BOLD] [BOLD_EVENTS] [PHYSIO] [STIM] [ASL] [ASL_M0SCAN] [ASL_CONTEXT] [ASL_LABELING] [DWI] [PHASEDIFF] [MAGNITUDE1] [MAGNITUDE2] [PHASE1] [PHASE2] [FIELDMAP] [EPI] [MEG] [MEG_CHANNELS] [MEG_EVENTS] [MEG_PHOTO] [MEG_FID] [MEG_FIDINFO] [MEG_HEADSHAPE] [EEG] [EEG_CHANNELS] [EEG_EVENTS] [EEG_ELECTRODES] [EEG_COORDSYSTEM] [EEG_PHOTO] [IEEG] [IEEG_CHANNELS] [IEEG_EVENTS] [IEEG_ELECTRODES] [IEEG_COORDSYSTEM] [IEEG_PHOTO] [PET] [PET_BLOOD] [BEH] [BEH_EVENTS] [NOCOMPRESS] [NOSIDECARS] [DESCRIPTOR]",
+    "inputs": [
+        {
+            "id": "input",
+            "name": "input",
+            "description": "Input folder containing data",
+            "optional": true,
+            "type": "String",
+            "value-key": "[INPUT]",
+            "command-line-flag": "--input"
+        },
+        {
+            "id": "outdir",
+            "name": "outdir",
+            "description": "Top-level output folder",
+            "optional": true,
+            "type": "String",
+            "value-key": "[OUTDIR]",
+            "command-line-flag": "--outdir"
+        },
+        {
+            "id": "subject",
+            "name": "subject",
+            "description": "Subject number",
+            "optional": true,
+            "type": "String",
+            "value-key": "[SUBJECT]",
+            "command-line-flag": "--subject"
+        },
+        {
+            "id": "session",
+            "name": "session",
+            "description": "Strings identifying sessions",
+            "optional": true,
+            "type": "String",
+            "value-key": "[SESSION]",
+            "command-line-flag": "--session"
+        },
+        {
+            "id": "session_labels",
+            "name": "session_labels",
+            "description": "Corresponding session labels",
+            "optional": true,
+            "type": "String",
+            "value-key": "[SESSION_LABELS]",
+            "command-line-flag": "--session_labels"
+        },
+        {
+            "id": "session_use_index",
+            "name": "session_use_index",
+            "description": "Use index numbers for directory and file names? e.g. ses-1, ses-2",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[SESSION_USE_INDEX]",
+            "command-line-flag": "--session_use_index"
+        },
+        {
+            "id": "task",
+            "name": "task",
+            "description": "Strings identifying tasks",
+            "optional": true,
+            "type": "String",
+            "value-key": "[TASK]",
+            "command-line-flag": "--task"
+        },
+        {
+            "id": "task_labels",
+            "name": "task_labels",
+            "description": "Corresponding task labels",
+            "optional": true,
+            "type": "String",
+            "value-key": "[TASK_LABELS]",
+            "command-line-flag": "--task_labels"
+        },
+        {
+            "id": "run",
+            "name": "run",
+            "description": "Strings identifying runs",
+            "optional": true,
+            "type": "String",
+            "value-key": "[RUN]",
+            "command-line-flag": "--run"
+        },
+        {
+            "id": "acq",
+            "name": "acq",
+            "description": "Strings identifying acquisitions",
+            "optional": true,
+            "type": "String",
+            "value-key": "[ACQ]",
+            "command-line-flag": "--acq"
+        },
+        {
+            "id": "acq_labels",
+            "name": "acq_labels",
+            "description": "Corresponding acquisition labels",
+            "optional": true,
+            "type": "String",
+            "value-key": "[ACQ_LABELS]",
+            "command-line-flag": "--acq_labels"
+        },
+        {
+            "id": "ce",
+            "name": "ce",
+            "description": "Strings identifying constrast enhancing agents",
+            "optional": true,
+            "type": "String",
+            "value-key": "[CE]",
+            "command-line-flag": "--ce"
+        },
+        {
+            "id": "ce_labels",
+            "name": "ce_labels",
+            "description": "Corresponding contrast enhancing agent labels",
+            "optional": true,
+            "type": "String",
+            "value-key": "[CE_LABELS]",
+            "command-line-flag": "--ce_labels"
+        },
+        {
+            "id": "trc",
+            "name": "trc",
+            "description": "Strings identifying tracers",
+            "optional": true,
+            "type": "String",
+            "value-key": "[TRC]",
+            "command-line-flag": "--trc"
+        },
+        {
+            "id": "trc_labels",
+            "name": "trc_labels",
+            "description": "Corresponding tracer labels",
+            "optional": true,
+            "type": "String",
+            "value-key": "[TRC_LABELS]",
+            "command-line-flag": "--trc_labels"
+        },
+        {
+            "id": "rec",
+            "name": "rec",
+            "description": "Strings identifying reconstruction algorithms",
+            "optional": true,
+            "type": "String",
+            "value-key": "[REC]",
+            "command-line-flag": "--rec"
+        },
+        {
+            "id": "rec_labels",
+            "name": "rec_labels",
+            "description": "Corresponding reconstruction labels",
+            "optional": true,
+            "type": "String",
+            "value-key": "[REC_LABELS]",
+            "command-line-flag": "--rec_labels"
+        },
+        {
+            "id": "dir",
+            "name": "dir",
+            "description": "Strings identifying phase-encoding directions",
+            "optional": true,
+            "type": "String",
+            "value-key": "[DIR]",
+            "command-line-flag": "--dir"
+        },
+        {
+            "id": "dir_labels",
+            "name": "dir_labels",
+            "description": "Corresponding direction labels",
+            "optional": true,
+            "type": "String",
+            "value-key": "[DIR_LABELS]",
+            "command-line-flag": "--dir_labels"
+        },
+        {
+            "id": "mod",
+            "name": "mod",
+            "description": "For defacing masks, strings identifying corresponding modality",
+            "optional": true,
+            "type": "String",
+            "value-key": "[MOD]",
+            "command-line-flag": "--mod"
+        },
+        {
+            "id": "mod_labels",
+            "name": "mod_labels",
+            "description": "Corresponding modality labels",
+            "optional": true,
+            "type": "String",
+            "value-key": "[MOD_LABELS]",
+            "command-line-flag": "--mod_labels"
+        },
+        {
+            "id": "echo",
+            "name": "echo",
+            "description": "Strings identifying different echo times",
+            "optional": true,
+            "type": "String",
+            "value-key": "[ECHO]",
+            "command-line-flag": "--echo"
+        },
+        {
+            "id": "echo_values",
+            "name": "echo_values",
+            "description": "Corresponding echo times",
+            "optional": true,
+            "type": "String",
+            "value-key": "[ECHO_VALUES]",
+            "command-line-flag": "--echo_values"
+        },
+        {
+            "id": "flip",
+            "name": "flip",
+            "description": "Strings identifying different flip angles",
+            "optional": true,
+            "type": "String",
+            "value-key": "[FLIP]",
+            "command-line-flag": "--flip"
+        },
+        {
+            "id": "flip_values",
+            "name": "flip_values",
+            "description": "Corresponding flip angles",
+            "optional": true,
+            "type": "String",
+            "value-key": "[FLIP_VALUES]",
+            "command-line-flag": "--flip_values"
+        },
+        {
+            "id": "inv",
+            "name": "inv",
+            "description": "Strings identifying different inversion times",
+            "optional": true,
+            "type": "String",
+            "value-key": "[INV]",
+            "command-line-flag": "--inv"
+        },
+        {
+            "id": "inv_values",
+            "name": "inv_values",
+            "description": "Corresponding inversion times",
+            "optional": true,
+            "type": "String",
+            "value-key": "[INV_VALUES]",
+            "command-line-flag": "--inv_values"
+        },
+        {
+            "id": "mt",
+            "name": "mt",
+            "description": "Strings identifying different magnetization transfer states",
+            "optional": true,
+            "type": "String",
+            "value-key": "[MT]",
+            "command-line-flag": "--mt"
+        },
+        {
+            "id": "mt_labels",
+            "name": "mt_labels",
+            "description": "Corresponding magnetization transfer labels",
+            "optional": true,
+            "type": "String",
+            "value-key": "[MT_LABELS]",
+            "command-line-flag": "--mt_labels"
+        },
+        {
+            "id": "part",
+            "name": "part",
+            "description": "Strings identifying components of complex MRI signal",
+            "optional": true,
+            "type": "String",
+            "value-key": "[PART]",
+            "command-line-flag": "--part"
+        },
+        {
+            "id": "part_labels",
+            "name": "part_labels",
+            "description": "Corresponding component labels",
+            "optional": true,
+            "type": "String",
+            "value-key": "[PART_LABELS]",
+            "command-line-flag": "--part_labels"
+        },
+        {
+            "id": "recording",
+            "name": "recording",
+            "description": "Strings identifying recordings",
+            "optional": true,
+            "type": "String",
+            "value-key": "[RECORDING]",
+            "command-line-flag": "--recording"
+        },
+        {
+            "id": "recording_labels",
+            "name": "recording_labels",
+            "description": "Corresponding recording labels",
+            "optional": true,
+            "type": "String",
+            "value-key": "[RECORDING_LABELS]",
+            "command-line-flag": "--recording_labels"
+        },
+        {
+            "id": "t1w",
+            "name": "t1w",
+            "description": "String identifying T1 weighted images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[T1W]",
+            "command-line-flag": "--t1w"
+        },
+        {
+            "id": "t2w",
+            "name": "t2w",
+            "description": "String identifying T2 weighted images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[T2W]",
+            "command-line-flag": "--t2w"
+        },
+        {
+            "id": "t1rho",
+            "name": "t1rho",
+            "description": "String identifying T1rho images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[T1RHO]",
+            "command-line-flag": "--t1rho"
+        },
+        {
+            "id": "t1map",
+            "name": "t1map",
+            "description": "String identifying T1map images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[T1MAP]",
+            "command-line-flag": "--t1map"
+        },
+        {
+            "id": "t2map",
+            "name": "t2map",
+            "description": "String identifying T2map images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[T2MAP]",
+            "command-line-flag": "--t2map"
+        },
+        {
+            "id": "t2star",
+            "name": "t2star",
+            "description": "String identifying T2* images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[T2STAR]",
+            "command-line-flag": "--t2star"
+        },
+        {
+            "id": "flair",
+            "name": "flair",
+            "description": "String identifying FLAIR images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[FLAIR]",
+            "command-line-flag": "--flair"
+        },
+        {
+            "id": "flash",
+            "name": "flash",
+            "description": "String identifying FLASH images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[FLASH]",
+            "command-line-flag": "--flash"
+        },
+        {
+            "id": "pd",
+            "name": "pd",
+            "description": "String identifying PD images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[PD]",
+            "command-line-flag": "--pd"
+        },
+        {
+            "id": "pdmap",
+            "name": "pdmap",
+            "description": "String identifying PDmap images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[PDMAP]",
+            "command-line-flag": "--pdmap"
+        },
+        {
+            "id": "pdt2",
+            "name": "pdt2",
+            "description": "String identifying PDT2 images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[PDT2]",
+            "command-line-flag": "--pdt2"
+        },
+        {
+            "id": "inplanet1",
+            "name": "inplanet1",
+            "description": "String identifying inplaneT1 images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[INPLANET1]",
+            "command-line-flag": "--inplanet1"
+        },
+        {
+            "id": "inplanet2",
+            "name": "inplanet2",
+            "description": "String identifying inplaneT2 images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[INPLANET2]",
+            "command-line-flag": "--inplanet2"
+        },
+        {
+            "id": "angio",
+            "name": "angio",
+            "description": "String identifying angio images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[ANGIO]",
+            "command-line-flag": "--angio"
+        },
+        {
+            "id": "bold",
+            "name": "bold",
+            "description": "String identifying BOLD images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[BOLD]",
+            "command-line-flag": "--bold"
+        },
+        {
+            "id": "bold_events",
+            "name": "bold_events",
+            "description": "String identifying BOLD events files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[BOLD_EVENTS]",
+            "command-line-flag": "--bold_events"
+        },
+        {
+            "id": "physio",
+            "name": "physio",
+            "description": "String identifying physiological recordings",
+            "optional": true,
+            "type": "String",
+            "value-key": "[PHYSIO]",
+            "command-line-flag": "--physio"
+        },
+        {
+            "id": "stim",
+            "name": "stim",
+            "description": "String identifying stimulus files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[STIM]",
+            "command-line-flag": "--stim"
+        },
+        {
+            "id": "asl",
+            "name": "asl",
+            "description": "String identifying ASL images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[ASL]",
+            "command-line-flag": "--asl"
+        },
+        {
+            "id": "asl_m0scan",
+            "name": "asl_m0scan",
+            "description": "String identifying m0scan images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[ASL_M0SCAN]",
+            "command-line-flag": "--asl_m0scan"
+        },
+        {
+            "id": "asl_context",
+            "name": "asl_context",
+            "description": "String identifying ASL context files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[ASL_CONTEXT]",
+            "command-line-flag": "--asl_context"
+        },
+        {
+            "id": "asl_labeling",
+            "name": "asl_labeling",
+            "description": "String identifying ASL labeling images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[ASL_LABELING]",
+            "command-line-flag": "--asl_labeling"
+        },
+        {
+            "id": "dwi",
+            "name": "dwi",
+            "description": "String identifying DWI images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[DWI]",
+            "command-line-flag": "--dwi"
+        },
+        {
+            "id": "phasediff",
+            "name": "phasediff",
+            "description": "String identifying FMAP phasediff images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[PHASEDIFF]",
+            "command-line-flag": "--phasediff"
+        },
+        {
+            "id": "magnitude1",
+            "name": "magnitude1",
+            "description": "String identifying FMAP magnitude1 images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[MAGNITUDE1]",
+            "command-line-flag": "--magnitude1"
+        },
+        {
+            "id": "magnitude2",
+            "name": "magnitude2",
+            "description": "String identifying FMAP magnitude2 images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[MAGNITUDE2]",
+            "command-line-flag": "--magnitude2"
+        },
+        {
+            "id": "phase1",
+            "name": "phase1",
+            "description": "String identifying FMAP phase1 images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[PHASE1]",
+            "command-line-flag": "--phase1"
+        },
+        {
+            "id": "phase2",
+            "name": "phase2",
+            "description": "String identifying FMAP phase2 images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[PHASE2]",
+            "command-line-flag": "--phase2"
+        },
+        {
+            "id": "fieldmap",
+            "name": "fieldmap",
+            "description": "String identifying FMAP fieldmap images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[FIELDMAP]",
+            "command-line-flag": "--fieldmap"
+        },
+        {
+            "id": "epi",
+            "name": "epi",
+            "description": "String identifying FMAP epi images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[EPI]",
+            "command-line-flag": "--epi"
+        },
+        {
+            "id": "meg",
+            "name": "meg",
+            "description": "String identifying MEG images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[MEG]",
+            "command-line-flag": "--meg"
+        },
+        {
+            "id": "meg_channels",
+            "name": "meg_channels",
+            "description": "String identifying MEG channels file",
+            "optional": true,
+            "type": "String",
+            "value-key": "[MEG_CHANNELS]",
+            "command-line-flag": "--meg_channels"
+        },
+        {
+            "id": "meg_events",
+            "name": "meg_events",
+            "description": "String identifying MEG events files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[MEG_EVENTS]",
+            "command-line-flag": "--meg_events"
+        },
+        {
+            "id": "meg_photo",
+            "name": "meg_photo",
+            "description": "String identifying MEG photo files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[MEG_PHOTO]",
+            "command-line-flag": "--meg_photo"
+        },
+        {
+            "id": "meg_fid",
+            "name": "meg_fid",
+            "description": "String identifying MEG fid files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[MEG_FID]",
+            "command-line-flag": "--meg_fid"
+        },
+        {
+            "id": "meg_fidinfo",
+            "name": "meg_fidinfo",
+            "description": "String identifying MEG fidinfo files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[MEG_FIDINFO]",
+            "command-line-flag": "--meg_fidinfo"
+        },
+        {
+            "id": "meg_headshape",
+            "name": "meg_headshape",
+            "description": "String identifying MEG headshape files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[MEG_HEADSHAPE]",
+            "command-line-flag": "--meg_headshape"
+        },
+        {
+            "id": "eeg",
+            "name": "eeg",
+            "description": "String identifying EEG data files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[EEG]",
+            "command-line-flag": "--eeg"
+        },
+        {
+            "id": "eeg_channels",
+            "name": "eeg_channels",
+            "description": "String identifying EEG channel files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[EEG_CHANNELS]",
+            "command-line-flag": "--eeg_channels"
+        },
+        {
+            "id": "eeg_events",
+            "name": "eeg_events",
+            "description": "String identifying EEG events files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[EEG_EVENTS]",
+            "command-line-flag": "--eeg_events"
+        },
+        {
+            "id": "eeg_electrodes",
+            "name": "eeg_electrodes",
+            "description": "String identifying EEG electrodes files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[EEG_ELECTRODES]",
+            "command-line-flag": "--eeg_electrodes"
+        },
+        {
+            "id": "eeg_coordsystem",
+            "name": "eeg_coordsystem",
+            "description": "String identifying EEG coordsystem files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[EEG_COORDSYSTEM]",
+            "command-line-flag": "--eeg_coordsystem"
+        },
+        {
+            "id": "eeg_photo",
+            "name": "eeg_photo",
+            "description": "String identifying EEG photo files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[EEG_PHOTO]",
+            "command-line-flag": "--eeg_photo"
+        },
+        {
+            "id": "ieeg",
+            "name": "ieeg",
+            "description": "String identifying IEEG data files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[IEEG]",
+            "command-line-flag": "--ieeg"
+        },
+        {
+            "id": "ieeg_channels",
+            "name": "ieeg_channels",
+            "description": "String identifying IEEG channel files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[IEEG_CHANNELS]",
+            "command-line-flag": "--ieeg_channels"
+        },
+        {
+            "id": "ieeg_events",
+            "name": "ieeg_events",
+            "description": "String identifying IEEG events files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[IEEG_EVENTS]",
+            "command-line-flag": "--ieeg_events"
+        },
+        {
+            "id": "ieeg_electrodes",
+            "name": "ieeg_electrodes",
+            "description": "String identifying IEEG electrodes files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[IEEG_ELECTRODES]",
+            "command-line-flag": "--ieeg_electrodes"
+        },
+        {
+            "id": "ieeg_coordsystem",
+            "name": "ieeg_coordsystem",
+            "description": "String identifying IEEG coordsystem files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[IEEG_COORDSYSTEM]",
+            "command-line-flag": "--ieeg_coordsystem"
+        },
+        {
+            "id": "ieeg_photo",
+            "name": "ieeg_photo",
+            "description": "String identifying IEEG photo files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[IEEG_PHOTO]",
+            "command-line-flag": "--ieeg_photo"
+        },
+        {
+            "id": "pet",
+            "name": "pet",
+            "description": "String identifying PET images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[PET]",
+            "command-line-flag": "--pet"
+        },
+        {
+            "id": "pet_blood",
+            "name": "pet_blood",
+            "description": "String identifying PET blood files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[PET_BLOOD]",
+            "command-line-flag": "--pet_blood"
+        },
+        {
+            "id": "beh",
+            "name": "beh",
+            "description": "String identifying BEH images",
+            "optional": true,
+            "type": "String",
+            "value-key": "[BEH]",
+            "command-line-flag": "--beh"
+        },
+        {
+            "id": "beh_events",
+            "name": "beh_events",
+            "description": "String identifying BEH events files",
+            "optional": true,
+            "type": "String",
+            "value-key": "[BEH_EVENTS]",
+            "command-line-flag": "--beh_events"
+        },
+        {
+            "id": "nocompress",
+            "name": "nocompress",
+            "description": "Turn off gzip compression, saves time while testing",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[NOCOMPRESS]",
+            "command-line-flag": "--nocompress"
+        },
+        {
+            "id": "nosidecars",
+            "name": "nosidecars",
+            "description": "Do not create empty JSON sidecar templates",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[NOSIDECARS]",
+            "command-line-flag": "--nosidecars"
+        },
+        {
+            "id": "descriptor",
+            "name": "descriptor",
+            "description": "Create a boutiques descriptor when running the program (does not execute BIDSifiation).",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[DESCRIPTOR]",
+            "command-line-flag": "--descriptor"
+        }
+    ],
+    "tags": {},
+    "suggested-resources": {
+        "cpu-cores": 1,
+        "ram": 1,
+        "walltime-estimate": 60
+    }
+}

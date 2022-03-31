@@ -1,0 +1,2 @@
+#!/bin/sh -l
+mkdir -p test_PP02; python bids_converter.py --input PP02 --output_prefix test --subject 2 --session 'Control,Spinal;PLCB,SPINAAL' --task pre,post --task_labels pre,post --t1w PACS --t2w SENSE --bold BOLD --physio PIJN

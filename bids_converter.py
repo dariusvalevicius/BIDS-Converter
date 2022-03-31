@@ -3,17 +3,14 @@ import os
 import argparse
 import shutil
 import gzip
+import csv
 from glob import glob
+# from bids_validator import BIDSValidator
 
-## TODO
+# TODO
 
-# Implement
-    # Echo?
-    # CE?
-# Additional subdirectories and modality support:
-    # FMAP?
-# Stretch goals:
-    # Metadata/json headers
+# JSON sidecars
+# Plug in BIDS validator
 
 
 # Argument parser
@@ -21,94 +18,321 @@ print('Parsing arguments...')
 
 parser = argparse.ArgumentParser(
     description='Convert an arbitrarily structured brain imaging dataset to BIDS format')
-parser.add_argument('-i', '--input', type=str, metavar='',
+parser.add_argument('--input', type=str, metavar='',
                     help='Input folder containing data')
-parser.add_argument('-s', '--subject', type=str,
+parser.add_argument('--output_prefix', type=str, metavar='',
+                    help='Top-level output folder prefix, to be combined with input foldername')
+parser.add_argument('--subject', type=str,
                     metavar='', help='Subject number')
-parser.add_argument('--sessions', type=str, metavar='',
+
+
+# Entities
+# Session
+parser.add_argument('--session', type=str, metavar='',
                     help='Strings identifying sessions')
-parser.add_argument('-r', '--runs', type=str, metavar='',
+parser.add_argument('--session_labels', type=str, metavar='',
+                    help='Corresponding session labels')
+parser.add_argument('--session_use_index', default=False, action='store_true',
+                    help='Use index numbers for directory and file names? e.g. ses-1, ses-2')
+# Tasks
+parser.add_argument('--task', type=str, metavar='',
+                    help='Strings identifying tasks')
+parser.add_argument('--task_labels', type=str, metavar='',
+                    help='Corresponding task labels')
+# Runs
+parser.add_argument('--run', type=str, metavar='',
                     help='Strings identifying runs')
-parser.add_argument('-t', '--tasks', type=str, metavar='',
-                    help='Strings identifying tasks')
-parser.add_argument('--task_suffixes', type=str, metavar='',
-                    help='Strings identifying tasks')
+# Acquisitions
 parser.add_argument('--acq', type=str, metavar='',
                     help='Strings identifying acquisitions')
-parser.add_argument('--acq_suffixes', type=str, metavar='',
-                    help='Strings identifying acquisition suffixes')
+parser.add_argument('--acq_labels', type=str, metavar='',
+                    help='Corresponding acquisition labels')
+# Constrast enhancing agents
+parser.add_argument('--ce', type=str, metavar='',
+                    help='Strings identifying constrast enhancing agents')
+parser.add_argument('--ce_labels', type=str, metavar='',
+                    help='Corresponding contrast enhancing agent labels')
+# Tracers
+parser.add_argument('--trc', type=str, metavar='',
+                    help='Strings identifying tracers')
+parser.add_argument('--trc_labels', type=str, metavar='',
+                    help='Corresponding tracer labels')
+# Reconstructions
+parser.add_argument('--rec', type=str, metavar='',
+                    help='Strings identifying reconstruction algorithms')
+parser.add_argument('--rec_labels', type=str, metavar='',
+                    help='Corresponding reconstruction labels')
+# Phase-encoding directions
+parser.add_argument('--dir', type=str, metavar='',
+                    help='Strings identifying phase-encoding directions')
+parser.add_argument('--dir_labels', type=str, metavar='',
+                    help='Corresponding direction labels')
+# Corresponding modality
+parser.add_argument('--mod', type=str, metavar='',
+                    help='For defacing masks, strings identifying corresponding modality')
+parser.add_argument('--mod_labels', type=str, metavar='',
+                    help='Corresponding modality labels')
+# Echo times
+parser.add_argument('--echo', type=str, metavar='',
+                    help='Strings identifying different echo times')
+parser.add_argument('--echo_values', type=str, metavar='',
+                    help='Corresponding echo times')
+# Flip angles
+parser.add_argument('--flip', type=str, metavar='',
+                    help='Strings identifying different flip angles')
+parser.add_argument('--flip_values', type=str, metavar='',
+                    help='Corresponding flip angles')
+# Inversion times
+parser.add_argument('--inv', type=str, metavar='',
+                    help='Strings identifying different inversion times')
+parser.add_argument('--inv_values', type=str, metavar='',
+                    help='Corresponding inversion times')
+# Magnetization transfer states
+parser.add_argument('--mt', type=str, metavar='',
+                    help='Strings identifying different magnetization transfer states')
+parser.add_argument('--mt_labels', type=str, metavar='',
+                    help='Corresponding magnetization transfer labels')
+# MRI components
+parser.add_argument('--part', type=str, metavar='',
+                    help='Strings identifying components of complex MRI signal')
+parser.add_argument('--part_labels', type=str, metavar='',
+                    help='Corresponding component labels')
+# Recordings
+parser.add_argument('--recording', type=str, metavar='',
+                    help='Strings identifying recordings')
+parser.add_argument('--recording_labels', type=str, metavar='',
+                    help='Corresponding recording labels')
+
+# Other entity
+# parser.add_argument('--other_entity_name', type=str, metavar='',
+#                     help='If needed, enter an entity not listed among previous arguments. Use a lower case term or abbreviation.')
+# parser.add_argument('--other_entity_strings', type=str, metavar='',
+#                     help='Strings identifying other entity keys')
+# parser.add_argument('--other_entity_labels', type=str, metavar='',
+#                     help='Corresponding entity labels (strings only)')
+# parser.add_argument('--other_entity_values', type=str, metavar='',
+#                     help='Correspinding entity values (floating point numbers only)')
 
 
-parser.add_argument('-a', '--anat', default=False,
-                    action='store_true', help='Presence of anatomical data')
+# ANATOMICAL
+# parser.add_argument('-a', '--anat', default=False,
+#                     action='store_true', help='Presence of anatomical data')
 parser.add_argument('--t1w', type=str, metavar='',
-                    help='Shell-type expression identifying T1 weighted images')
+                    help='String identifying T1 weighted images')
 parser.add_argument('--t2w', type=str, metavar='',
-                    help='Shell-type expression identifying T2 weighted images')
+                    help='String identifying T2 weighted images')
+parser.add_argument('--t1rho', type=str, metavar='',
+                    help='String identifying T1rho images')
+parser.add_argument('--t1map', type=str, metavar='',
+                    help='String identifying T1map images')
+parser.add_argument('--t2map', type=str, metavar='',
+                    help='String identifying T2map images')
+parser.add_argument('--t2star', type=str, metavar='',
+                    help='String identifying T2* images')
 parser.add_argument('--flair', type=str, metavar='',
-                    help='Shell-type expression identifying FLAIR images')
+                    help='String identifying FLAIR images')
+parser.add_argument('--flash', type=str, metavar='',
+                    help='String identifying FLASH images')
+parser.add_argument('--pd', type=str, metavar='',
+                    help='String identifying PD images')
+parser.add_argument('--pdmap', type=str, metavar='',
+                    help='String identifying PDmap images')
+parser.add_argument('--pdt2', type=str, metavar='',
+                    help='String identifying PDT2 images')
+parser.add_argument('--inplanet1', type=str, metavar='',
+                    help='String identifying inplaneT1 images')
+parser.add_argument('--inplanet2', type=str, metavar='',
+                    help='String identifying inplaneT2 images')
+parser.add_argument('--angio', type=str, metavar='',
+                    help='String identifying angio images')
 
-parser.add_argument('-f', '--func', default=False,
-                    action='store_true', help='Presence of functional data')
-parser.add_argument('-b', '--bold', type=str, metavar='',
-                    help='Shell-type expression describing BOLD data files')
+
+# FUNCTIONAL
+# parser.add_argument('-f', '--func', default=False,
+#                     action='store_true', help='Presence of functional data')
+parser.add_argument('--bold', type=str, metavar='',
+                    help='String identifying BOLD images')
+parser.add_argument('--bold_events', type=str, metavar='',
+                    help='String identifying BOLD events files')
+
+# PHYSIOLOGICAL
+parser.add_argument('--physio', type=str, metavar='',
+                    help='String identifying physiological recordings')
+parser.add_argument('--stim', type=str, metavar='',
+                    help='String identifying stimulus files')
+
+# PERFUSION
 parser.add_argument('--asl', type=str, metavar='',
-                    help='Shell-type expression describing ASL data files')
-parser.add_argument('-p', '--physio', type=str, metavar='',
-                    help='Shell-type expression describing physiological data files')
+                    help='String identifying ASL images')
+parser.add_argument('--asl_m0scan', type=str, metavar='',
+                    help='String identifying m0scan images')
+parser.add_argument('--asl_context', type=str, metavar='',
+                    help='String identifying ASL context files')
+parser.add_argument('--asl_labeling', type=str, metavar='',
+                    help='String identifying ASL labeling images')
 
-parser.add_argument('-d', '--dwi', default=False,
-                    action='store_true', help='Presence of DWI images')
-parser.add_argument('--dwi_strings', type=str, metavar='',
-                    help='Shell-type expression identifying WDI images')
+# DIFFUSION WEIGHTED IMAGING
+# parser.add_argument('-d', '--dwi', default=False,
+#                     action='store_true', help='Presence of DWI images')
+parser.add_argument('--dwi', type=str, metavar='',
+                    help='String identifying DWI images')
+
+# FMAP
+parser.add_argument('--phasediff', type=str, metavar='',
+                    help='String identifying FMAP phasediff images')
+parser.add_argument('--magnitude1', type=str, metavar='',
+                    help='String identifying FMAP magnitude1 images')
+parser.add_argument('--magnitude2', type=str, metavar='',
+                    help='String identifying FMAP magnitude2 images')
+parser.add_argument('--phase1', type=str, metavar='',
+                    help='String identifying FMAP phase1 images')
+parser.add_argument('--phase2', type=str, metavar='',
+                    help='String identifying FMAP phase2 images')
+parser.add_argument('--fieldmap', type=str, metavar='',
+                    help='String identifying FMAP fieldmap images')
+parser.add_argument('--epi', type=str, metavar='',
+                    help='String identifying FMAP epi images')
+
+# MEG
+parser.add_argument('--meg', type=str, metavar='',
+                    help='String identifying MEG images')
+parser.add_argument('--meg_channels', type=str, metavar='',
+                    help='String identifying MEG channels file')
+parser.add_argument('--meg_events', type=str, metavar='',
+                    help='String identifying MEG events files')
+parser.add_argument('--meg_photo', type=str, metavar='',
+                    help='String identifying MEG photo files')
+parser.add_argument('--meg_fid', type=str, metavar='',
+                    help='String identifying MEG fid files')
+parser.add_argument('--meg_fidinfo', type=str, metavar='',
+                    help='String identifying MEG fidinfo files')
+parser.add_argument('--meg_headshape', type=str, metavar='',
+                    help='String identifying MEG headshape files')
+
+
+# EEG
+parser.add_argument('--eeg', type=str, metavar='',
+                    help='String identifying EEG data files')
+parser.add_argument('--eeg_channels', type=str, metavar='',
+                    help='String identifying EEG channel files')
+parser.add_argument('--eeg_events', type=str, metavar='',
+                    help='String identifying EEG events files')
+parser.add_argument('--eeg_electrodes', type=str, metavar='',
+                    help='String identifying EEG electrodes files')
+parser.add_argument('--eeg_coordsystem', type=str, metavar='',
+                    help='String identifying EEG coordsystem files')
+parser.add_argument('--eeg_photo', type=str, metavar='',
+                    help='String identifying EEG photo files')
+
+# IEEG
+parser.add_argument('--ieeg', type=str, metavar='',
+                    help='String identifying IEEG data files')
+parser.add_argument('--ieeg_channels', type=str, metavar='',
+                    help='String identifying IEEG channel files')
+parser.add_argument('--ieeg_events', type=str, metavar='',
+                    help='String identifying IEEG events files')
+parser.add_argument('--ieeg_electrodes', type=str, metavar='',
+                    help='String identifying IEEG electrodes files')
+parser.add_argument('--ieeg_coordsystem', type=str, metavar='',
+                    help='String identifying IEEG coordsystem files')
+parser.add_argument('--ieeg_photo', type=str, metavar='',
+                    help='String identifying IEEG photo files')
+
+# PET
+parser.add_argument('--pet', type=str, metavar='',
+                    help='String identifying PET images')
+parser.add_argument('--pet_blood', type=str, metavar='',
+                    help='String identifying PET blood files')
+
+# BEH
+parser.add_argument('--beh', type=str, metavar='',
+                    help='String identifying BEH images')
+parser.add_argument('--beh_events', type=str, metavar='',
+                    help='String identifying BEH events files')
+
 
 parser.add_argument('--nocompress', default=False,
                     action='store_true', help='Turn off gzip compression, saves time while testing')
+parser.add_argument('--nosidecars', default=False,
+                    action='store_true', help='Do not create empty JSON sidecar templates')
+parser.add_argument('--descriptor', default = False,
+                    action='store_true', help='Create a boutiques descriptor when running the program (does not execute BIDSifiation).')
 
 
 args = parser.parse_args()
+
+#print(args)
 
 print('Done.')
 
 
 # Declare global vars
 
-entity_dict = {} # Stores input strings as keys and BIDS entities as values
+entity_dict = {}  # Stores input strings as keys and BIDS entities as values
 subject_folder = ''
 session_folders = []
 
 # Define helper functions
 
-# Create modality folder
-# If there are sessions, nest within sessions
-def create_modality_dir(modality_exists, folder_name):
 
-    if not modality_exists:
+def create_datatype_dir(subject_folder, session_folders, datatype_exists, folder_name):
+    """
+    Creates folder for specified datatype. If there are sessions, nests within session folders.
+
+        INPUT:
+            datatype_exists = input argument for modality under datatype. If empty, is NULL/false.
+            folder_name = name of datatype folder to be created
+    """
+
+    if not datatype_exists:
         return
 
     if session_folders:
         for folder in session_folders:
-            os.mkdir(os.path.join(folder, folder_name))
+            path = os.path.join(folder, folder_name)
+            if os.path.isdir(path):
+                return
+            os.mkdir(path)
     else:
-        os.mkdir(os.path.join(subject_folder, folder_name))
-
+        path = os.path.join(subject_folder, folder_name)
+        if os.path.isdir(path):
+            return
+        os.mkdir(path)
 
 
 def compress_nii(file_path):
-    # If .nii is uncompressed, compress
-    if (not '.gz' in file_path) and (not args.nocompress):
-        with open(file_path, 'rb') as f_in:
-            with gzip.open(file_path + '.gz', 'wb', compresslevel=3) as f_out:
-                shutil.copyfileobj(f_in, f_out)
-        os.remove(file_path)
+    """
+    Compresses uncompressed NIfTI files. Removed uncompressed file from BIDS output directory.
+
+        INPUT:
+            file_path = uncompressed NIfTI file in output directory (not original file).
+    """
+
+    with open(file_path, 'rb') as f_in:
+        with gzip.open(file_path + '.gz', 'wb', compresslevel=3) as f_out:
+            shutil.copyfileobj(f_in, f_out)
+    os.remove(file_path)
 
 
-def populate_dict(entity_identifier, entity_prefix, entity_suffix=''):
+def populate_dict(entity_dict_local, entity_prefix, entity_identifier, entity_suffix, use_index):
+    """
+    Populates the Entity key-value dictionary, where key is the input file substring and value is the BIDS-valid entity string.
+
+        INPUT:
+            entity_dict = entity dictionary
+            entity_prefix = BIDS entity prefix (e.g. ses, run, acq)
+            entity_identifier = Substring identifying entity in input filenames
+            entity_suffix = label or value of entity (e.g. run-[1], ses-[2])
+            use_index = boolean indicating whether to prefer index over label (for session entity)
+
+        OUTPUT:
+            entity_dict = entity dictionary
+    """
 
     # If argument is blank, exit function
     if not entity_identifier:
-        return
-    
+        return entity_dict_local
+
     # loop through input sets separated by semicolons
     sets = entity_identifier.split(';')
     for set in sets:
@@ -119,23 +343,40 @@ def populate_dict(entity_identifier, entity_prefix, entity_suffix=''):
         index = 0
         for key in keys:
             # construct appropriate BIDS entity string
-            if (entity_suffix):
+            if (use_index):
                 entity_suffix_list = entity_suffix.split(',')
-                entity_dict[key.casefold()] =  entity_prefix + '-' + entity_suffix_list[index]
+                entity_dict_local[key.casefold()] = entity_prefix + \
+                    '-' + entity_suffix_list[index]
             else:
-                entity_dict[key.casefold()] =  entity_prefix + '-' + str((index + 1))
+                entity_dict_local[key.casefold()] = entity_prefix + \
+                    '-' + str((index + 1))
 
             index += 1
-  
 
-def copy_modality_files(modality, identifier, category):
+    return entity_dict_local
+
+
+def copy_modality_files(subject_folder, entity_dict_local, identifier, modality, category):
+    """
+    Copies files from input directory to BIDS output directory with proper filenames.
+
+        INPUT:
+            identifier = Substring identifying modality
+            modality = Modality string (e.g. t1w, bold)
+            category = Datatype of modality (e.g. anat, func)
+    """
 
     # if argument is empty, return
     if not identifier:
         return
 
     # Find all files with identifier
-    source_files = glob(args.input + '/**/*' + identifier + '*', recursive=True)
+    source_files = glob(args.input + '/**/*' +
+                        identifier + '*', recursive=True)
+    if not source_files:
+        msg = "Error: No files found with identifier '" + identifier + "' for modality " + \
+            modality + ".\nEnsure that the indentifier accurately describes source files."
+        raise Exception(msg)
 
     # For each file of modality
     for source_file in source_files:
@@ -143,40 +384,119 @@ def copy_modality_files(modality, identifier, category):
         # Find which entities are present
         # This_entities stores values of present entities
         this_entities = {}
-        entity_strings = ['ses', 'task', 'acq', 'run']
+        entity_strings = ['ses', 'task', 'acq', 'run', 'ce', 'trc', 'rec', 'dir', 'mod', 'echo', 'flip', 'inv', 'mt', 'part', 'recording']
 
-        for key in entity_dict:
+        for key in entity_dict_local:
             if key in source_file.casefold():
-                value =  entity_dict.get(key).split('-')[0]
-                #print('value:')
-                #print(value)
+                value = entity_dict_local.get(key).split('-')[0]
                 for entity_string in entity_strings:
                     if value == entity_string:
-                        this_entities[entity_string] = entity_dict[key] + '_'
+                        this_entities[entity_string] = entity_dict_local[key] + '_'
 
-        entity_string = this_entities.get('ses', "") + this_entities.get('task', "") + this_entities.get('acq', "") + this_entities.get('run', "")
+        # total_entity_string is the final string which will be included in the file name
+        total_entity_string = ""
+
+        for entity_string in entity_strings:
+            total_entity_string += this_entities.get(entity_string, "")
+
+        # Create file extension
         ext = os.path.splitext(source_file)[1]
-        #print('ext: ')
-        #print(ext)
-        dest_filename = subject_folder + '_' + entity_string + modality + ext
-        dest_filepath = os.path.join(subject_folder, this_entities.get('ses', "").strip('_'), category, dest_filename)
 
-        # copy file
+        # Create final filename
+        dest_filename = os.path.split(subject_folder)[1] + '_' + total_entity_string + modality + ext
+        dest_filepath = os.path.join(subject_folder, this_entities.get(
+            'ses', "").strip('_'), category, dest_filename)
+
+        if os.path.isfile(dest_filepath):
+            msg = "Error when trying to write file: " + dest_filepath + \
+                "\nFile with this name has already been written.\nMake sure that you include sufficient entities to differentiate files with similar properties."
+            raise Exception(msg)
+
+        # Copy file
         shutil.copy(source_file, dest_filepath)
 
-        if '.nii' in dest_filepath:
+        # Compress file if it is an uncompressed NIfTI
+        if ('.nii' in dest_filepath) and (not '.gz' in dest_filepath):
+            if args.nocompress:
+                return
             compress_nii(dest_filepath)
 
 
-# Main
+def create_descriptor():
+    """Create a Boutiques descriptor rather than running the program."""
+    import boutiques.creator as bc
+    
+    descriptor = bc.CreateDescriptor(parser, execname="python /app/bids-converter.py")
+    descriptor.save("boutiques_descriptor/bids-converter2.json")
+
+def create_json_sidecars(outdir, modalities):
+    """
+    Where a template exists, create an empty JSON sidecar in outout directory if sidecar is missing
+
+        INPUT:
+            modalities = total modalities data structure
+            outdir = output directory
+    """
+    for modality in modalities:
+        # get all files in outdir
+
+        out_files = glob(outdir + '/**/*' + modality[1] + '*', recursive=True)
+
+        # for each file, check if it has JSON extension or if there is a file with the same name with JSON extension
+
+        for file in out_files:
+            if os.path.isdir(file):
+                continue
+
+            root, ext = os.path.splitext(file)
+
+            if ext == '.json':
+                continue
+            if root + '.json' in out_files:
+                continue
+                
+            # if not, get datatype and modality
+
+            mod = modality[1]
+            dtype = modality[2]
+
+            # if template exists, create template with appropriate name
+            dtype_path = os.path.join('bids_templates', dtype)
+            if not os.path.isdir(dtype_path):
+                continue
+
+            template_file = 'bids_templates/' + dtype + '/' + mod + '.json'
+
+            if os.path.isfile(template_file):
+                shutil.copy(template_file, os.path.splitext(file)[0] + '.json')
+
+
+
+###########################################
+
+############################## MAIN SCRIPT
+
 if __name__ == '__main__':
 
-    #for arg in vars(args):
-    #    print(arg, getattr(args, arg))
+    # If descriptor argument is checked, create a descriptor and quit the program
+    if args.descriptor:
+        create_descriptor()
+        quit()
 
-    print('Creating subject folder...')
+
+    outdir = ""
+    if not args.output_prefix:
+        outdir = "bids-converter-results_" + os.path.split(args.input)[1]
+    else:
+        outdir = args.output_prefix + "_" + os.path.split(args.input)[1]
+
+    if not os.path.isdir(outdir):
+        os.mkdir(outdir)
+
+    ###################### SET UP SUBJECT FOLDER
 
     # Get subject number
+    print('Creating subject folder...')
     subject_num = ''
 
     if args.subject:
@@ -190,36 +510,43 @@ if __name__ == '__main__':
             if m.isdigit():
                 extracted_num += m
         if not extracted_num:
-            print('Error! Did not find subject number in folder name.')
-            # throw error
+            msg = 'Error! Did not find subject number in folder name.'
+            raise Exception(msg)
         subject_num = extracted_num.zfill(2)
-        #print('subject num:')
-        #print(subject_num)
 
     # Create top-level subject folder
-    subject_folder = 'sub-' + subject_num
+    subject_folder = os.path.join(outdir, 'sub-' + subject_num)
 
-    # If folder exists, remove
     if os.path.isdir(subject_folder):
         shutil.rmtree(subject_folder)
-
+    
     os.mkdir(subject_folder)
 
     print('Done.')
+
+    #########################################
+
+    ################## SET UP SESSION FOLDERS
 
     # If sessions were input, create a list of sessions and
     # a folder for each one.
     # Also create a dictionary mapping session strings to session directory names.
     session_folders = []
 
-    if args.sessions:
+    if args.session:
         print('Creating session folders...')
-        session_string_sets = args.sessions.split(';')
-        # print(session_string_sets)
+        session_string_sets = args.session.split(';')
+        if args.session_labels:
+            session_labels = args.session_labels.split(';')
 
+        # Loop through elements of one session key array
         index = 0
         for session in session_string_sets[0].split(','):
-            subdir_name = 'ses-' + str(index + 1)
+
+            if (args.session_use_index or not args.session_labels):
+                subdir_name = 'ses-' + str(index + 1)
+            else:
+                subdir_name = 'ses-' + args.session_labels[index]
 
             session_folders.append(os.path.join(subject_folder, subdir_name))
             os.mkdir(session_folders[index])
@@ -227,62 +554,89 @@ if __name__ == '__main__':
             index += 1
         print('Done.')
 
+    ###########################################
 
-    print('Creating modality subfolders...')
-    # create modality folders
+    ################### CREATE DATATYPE FOLDERS
 
-    modality_subdirs = [
-        [args.anat, 'anat'],
-        [args.func, 'func'],
-        [args.dwi, 'dwi']
-        ]
+    print('Creating datatype subfolders...')
 
-    for subdir in modality_subdirs:
-        create_modality_dir(subdir[0], subdir[1])
+    # modality parameters now stored in txt file
+    modality_file = open("modalities.txt")
+    read_modality_file = csv.reader(modality_file, delimiter='\t')
+
+    # Create modality array (triple)
+    modalities = []
+    for row in read_modality_file:
+        modalities.append(row)
+
+    #print(modalities)
+
+    # col 0 is argument name, col 1 is suffix string, and col 2 is datatype
+    for modality in modalities:
+        create_datatype_dir(subject_folder, session_folders, getattr(args, modality[0]), modality[2])
 
     print('Done.')
 
+    ##############################################
+
+    #################### CREATE ENTITY DICTIONARY
+
     print('Creating BIDS entity dictionary...')
-    # collect up all entities
-    arg_list = [
-        [args.sessions, 'ses', ''],
-        [args.tasks, 'task', args.task_suffixes],
-        [args.runs, 'run', ''],
-        [args.acq, 'acq', args.acq_suffixes],
-        ]
+
+    entity_file = open("entities.txt")
+    read_entity_file = csv.reader(entity_file, delimiter='\t')
+
+    entities = []
+    for row in read_entity_file:
+        entities.append(row)
 
     # Populate entity dictionary using input strings
-    for arg_set in arg_list:
-        populate_dict(arg_set[0], arg_set[1], arg_set[2])
+    # col 0 = string, col 1 = argname, col 2 = label, col 3 = use_index
+    for entity in entities:
+        # if entity is session, get use_index from argument
+        if entity[0] == 'ses':
+            entity[3] = getattr(args, entity[3])
+
+        entity_dict = populate_dict(entity_dict, entity[0], getattr(args, entity[1]),
+                        getattr(args, entity[2]), entity[3])
 
     print('Done.')
     print('Entity dictionary:')
     for key in entity_dict:
-        print('Key: ' + key + '\t Value: ' + entity_dict.get(key, 'None').strip('_'))
-
-
-    modalities = [
-        ['T1w', args.t1w, 'anat'],
-        ['T2w', args.t2w, 'anat'],
-        ['FLAIR', args.flair, 'anat'],
-        ['BOLD', args.bold, 'func'],
-        ['ASL', args.asl, 'func'],
-        ['physio', args.physio, 'func'],
-        ['DWI', args.dwi, 'dwi']
-    ]
+        print('Key: ' + key + '\t Value: ' +
+              entity_dict.get(key, 'None').strip('_'))
 
     print('Modality identifiers:')
     for md in modalities:
-        if md[1]:
-            print('Modality: ' + md[0] + '\tIdentifier: ' + md[1])
+        if getattr(args, md[0]):
+            print('Modality: ' + md[1] +
+                  '\tIdentifier: ' + getattr(args, md[0]))
 
+    #######################################
+    
+    ############################ COPY FILES
 
     print('NIFTI compression is set to ' + str(not args.nocompress) + '.')
 
     print('Copying files...')
 
     for modality in modalities:
-        copy_modality_files(modality[0], modality[1], modality[2])
+        copy_modality_files(subject_folder, entity_dict,
+            getattr(args, modality[0]), modality[1], modality[2])
 
     print('Done.')
 
+    ########################################
+
+    ###################### Create JSON sidecars
+
+    if not args.nosidecars:
+        print('Creating JSON sidecars...')
+        create_json_sidecars(outdir, modalities)
+        print('Done.')
+
+    ###########################################
+
+    # print('Running BIDS validator...')
+    # print(BIDSValidator().is_bids(subject_folder))
+    # print('Done.')
