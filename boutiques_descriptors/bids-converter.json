@@ -16,7 +16,7 @@
             "name": "Input",
             "description": "Input folder containing data",
             "optional": true,
-            "type": "String",
+            "type": "File",
             "value-key": "[INPUT]",
             "command-line-flag": "--input"
         },
