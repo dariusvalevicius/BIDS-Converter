@@ -1,9 +1,11 @@
 from bz2 import compress
+from ctypes import sizeof
 import os
 import argparse
 import shutil
 import gzip
 import csv
+from datetime import date, datetime
 from glob import glob
 # from bids_validator import BIDSValidator
 
@@ -368,7 +370,7 @@ def copy_modality_files(subject_folder, entity_dict_local, identifier, modality,
 
     # if argument is empty, return
     if not identifier:
-        return
+        return False, False
 
     # Find all files with identifier
     source_files = glob(args.input + '/**/*' +
@@ -377,6 +379,9 @@ def copy_modality_files(subject_folder, entity_dict_local, identifier, modality,
         msg = "Error: No files found with identifier '" + identifier + "' for modality " + \
             modality + ".\nEnsure that the indentifier accurately describes source files."
         raise Exception(msg)
+
+    src = []
+    dest = []
 
     # For each file of modality
     for source_file in source_files:
@@ -412,14 +417,18 @@ def copy_modality_files(subject_folder, entity_dict_local, identifier, modality,
                 "\nFile with this name has already been written.\nMake sure that you include sufficient entities to differentiate files with similar properties."
             raise Exception(msg)
 
+
         # Copy file
         shutil.copy(source_file, dest_filepath)
 
         # Compress file if it is an uncompressed NIfTI
-        if ('.nii' in dest_filepath) and (not '.gz' in dest_filepath):
-            if args.nocompress:
-                return
+        if ('.nii' in dest_filepath) and (not '.gz' in dest_filepath) and not args.nocompress:
             compress_nii(dest_filepath)
+
+        src.append(source_file)
+        dest.append(dest_filepath)
+
+    return src, dest
 
 
 def create_descriptor():
@@ -436,7 +445,14 @@ def create_json_sidecars(outdir, modalities):
         INPUT:
             modalities = total modalities data structure
             outdir = output directory
+        OUTPUT:
+            num = number of JSON sidecars created
+            dest = names of JSON sidecars
     """
+
+    num = 0
+    dest = []
+
     for modality in modalities:
         # get all files in outdir
 
@@ -468,7 +484,13 @@ def create_json_sidecars(outdir, modalities):
             template_file = 'bids_templates/' + dtype + '/' + mod + '.json'
 
             if os.path.isfile(template_file):
-                shutil.copy(template_file, os.path.splitext(file)[0] + '.json')
+                dest_file = os.path.splitext(file)[0] + '.json'
+                shutil.copy(template_file, dest_file)
+
+                num += 1
+                dest.append(dest_file)
+
+    return num, dest
 
 
 
@@ -616,13 +638,36 @@ if __name__ == '__main__':
     
     ############################ COPY FILES
 
+    # Prepare logfile
+
+    log = open(os.path.join(outdir, 'bids_converter.log'), 'w')
+    log.write("## Log of BIDS Converter on CBRAIN\n")
+    log.write("## Author: Darius Valevicius, McGill University, 2022\n")
+    now = datetime.now()
+    log.write('## Date and time: ' + now.strftime("%d/%m/%Y %H:%M:%S") + '\n')
+
     print('NIFTI compression is set to ' + str(not args.nocompress) + '.')
 
     print('Copying files...')
 
+    num_files = 0
+
     for modality in modalities:
-        copy_modality_files(subject_folder, entity_dict,
+        src, dest = copy_modality_files(subject_folder, entity_dict,
             getattr(args, modality[0]), modality[1], modality[2])
+
+        if not src:
+            continue
+
+        for s, d in zip(src, dest):
+            log.write('\n' + s)
+            log.write(' => ')
+            log.write(str.removeprefix(d, outdir + '\\') + '\n')
+
+        num_files += len(src)
+
+
+    log.write('\nCopied ' + str(num_files) + ' files from source to destination.\n')
 
     print('Done.')
 
@@ -632,8 +677,17 @@ if __name__ == '__main__':
 
     if not args.nosidecars:
         print('Creating JSON sidecars...')
-        create_json_sidecars(outdir, modalities)
+        num, dest = create_json_sidecars(outdir, modalities)
+
+        log.write('\nCreated ' + str(num) + ' JSON sidecars from BIDS templates:\n')
+        for d in dest:
+            log.write('\n' + str.removeprefix(d, outdir + '\\'))
+
         print('Done.')
+
+
+    log.close()
+    
 
     ###########################################
 
