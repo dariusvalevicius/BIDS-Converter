@@ -259,6 +259,8 @@ parser.add_argument('--nosidecars', default=False,
                     action='store_true', help='Do not create empty JSON sidecar templates')
 parser.add_argument('--descriptor', default = False,
                     action='store_true', help='Create a boutiques descriptor when running the program (does not execute BIDSifiation).')
+parser.add_argument('--local', default = False,
+                    action='store_true', help='Do not use Docker filepaths [/app/] for supporting data files.')
 
 
 args = parser.parse_args()
@@ -481,7 +483,12 @@ def create_json_sidecars(outdir, modalities):
             if not os.path.isdir(dtype_path):
                 continue
 
-            template_file = 'bids_templates/' + dtype + '/' + mod + '.json'
+            if args.local:
+                template_dir = 'bids_templates/'
+            else:
+                template_dir = '/app/bids_templates/'
+
+            template_file = template_dir + dtype + '/' + mod + '.json'
 
             if os.path.isfile(template_file):
                 dest_file = os.path.splitext(file)[0] + '.json'
@@ -583,7 +590,11 @@ if __name__ == '__main__':
     print('Creating datatype subfolders...')
 
     # modality parameters now stored in txt file
-    modality_file = open("modalities.txt")
+    if args.local:
+        modality_file = open("modalities.txt")
+    else:
+        modality_file = open("/app/modalities.txt")
+
     read_modality_file = csv.reader(modality_file, delimiter='\t')
 
     # Create modality array (triple)
@@ -605,7 +616,11 @@ if __name__ == '__main__':
 
     print('Creating BIDS entity dictionary...')
 
-    entity_file = open("entities.txt")
+    if args.local:
+        entity_file = open("entities.txt")
+    else:
+        entity_file = open("/app/entities.txt")
+
     read_entity_file = csv.reader(entity_file, delimiter='\t')
 
     entities = []
