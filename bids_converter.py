@@ -414,6 +414,9 @@ def copy_modality_files(subject_folder, entity_dict_local, identifier, modality,
         dest_filepath = os.path.join(subject_folder, this_entities.get(
             'ses', "").strip('_'), category, dest_filename)
 
+        if not args.local:
+            dest_filepath = '/' + dest_filepath
+
         if os.path.isfile(dest_filepath):
             msg = "Error when trying to write file: " + dest_filepath + \
                 "\nFile with this name has already been written.\nMake sure that you include sufficient entities to differentiate files with similar properties."
