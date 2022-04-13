@@ -3,6 +3,7 @@
     "output_prefix": "test",
     "subject": "2",
     "session": "Control,Spinal;PLCB,SPINAAL",
+    "session_labels": "control,spinal",
     "t1w": "PACS",
     "t2w": "SENSE",
     "bold": "BOLD",

@@ -347,13 +347,13 @@ def populate_dict(entity_dict_local, entity_prefix, entity_identifier, entity_su
         index = 0
         for key in keys:
             # construct appropriate BIDS entity string
-            if (use_index):
+            if (use_index or not entity_suffix):
+                entity_dict_local[key.casefold()] = entity_prefix + \
+                '-' + str((index + 1))
+            else:
                 entity_suffix_list = entity_suffix.split(',')
                 entity_dict_local[key.casefold()] = entity_prefix + \
-                    '-' + entity_suffix_list[index]
-            else:
-                entity_dict_local[key.casefold()] = entity_prefix + \
-                    '-' + str((index + 1))
+                '-' + entity_suffix_list[index]
 
             index += 1
 
@@ -414,8 +414,8 @@ def copy_modality_files(subject_folder, entity_dict_local, identifier, modality,
         dest_filepath = os.path.join(subject_folder, this_entities.get(
             'ses', "").strip('_'), category, dest_filename)
 
-        if not args.local:
-            dest_filepath = '/' + dest_filepath
+        # if not args.local:
+        #     dest_filepath = '/' + dest_filepath
 
         if os.path.isfile(dest_filepath):
             msg = "Error when trying to write file: " + dest_filepath + \
@@ -569,7 +569,7 @@ if __name__ == '__main__':
         print('Creating session folders...')
         session_string_sets = args.session.split(';')
         if args.session_labels:
-            session_labels = args.session_labels.split(';')
+            session_labels = args.session_labels.split(',')
 
         # Loop through elements of one session key array
         index = 0
@@ -578,7 +578,7 @@ if __name__ == '__main__':
             if (args.session_use_index or not args.session_labels):
                 subdir_name = 'ses-' + str(index + 1)
             else:
-                subdir_name = 'ses-' + args.session_labels[index]
+                subdir_name = 'ses-' + session_labels[index]
 
             session_folders.append(os.path.join(subject_folder, subdir_name))
             os.mkdir(session_folders[index])
@@ -669,6 +669,10 @@ if __name__ == '__main__':
     print('Copying files...')
 
     num_files = 0
+
+    # files = os.listdir(os.getcwd())
+    # for file in files:
+    #     print(file)
 
     for modality in modalities:
         src, dest = copy_modality_files(subject_folder, entity_dict,
