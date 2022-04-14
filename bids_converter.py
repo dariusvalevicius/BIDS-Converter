@@ -337,6 +337,10 @@ def populate_dict(entity_dict_local, entity_prefix, entity_identifier, entity_su
     if not entity_identifier:
         return entity_dict_local
 
+    # print(entity_identifier)
+    # print(entity_suffix)
+    # print(use_index)
+
     # loop through input sets separated by semicolons
     sets = entity_identifier.split(';')
     for set in sets:
@@ -347,10 +351,15 @@ def populate_dict(entity_dict_local, entity_prefix, entity_identifier, entity_su
         index = 0
         for key in keys:
             # construct appropriate BIDS entity string
-            if (use_index or not entity_suffix):
+            if eval(str(use_index)) or not entity_suffix:
+                # print('using index')
+                # print(entity_suffix)
+                # print(use_index)
+                # print(use_index or (not entity_suffix))
                 entity_dict_local[key.casefold()] = entity_prefix + \
                 '-' + str((index + 1))
             else:
+                # print('using label')
                 entity_suffix_list = entity_suffix.split(',')
                 entity_dict_local[key.casefold()] = entity_prefix + \
                 '-' + entity_suffix_list[index]
@@ -466,11 +475,14 @@ def create_json_sidecars(outdir, modalities):
         # for each file, check if it has JSON extension or if there is a file with the same name with JSON extension
 
         for file in out_files:
+
+            # Skip if directory and not file
             if os.path.isdir(file):
                 continue
 
             root, ext = os.path.splitext(file)
 
+            # Skip if file is already a .JSON or if sister .JSON file already exists
             if ext == '.json':
                 continue
             if root + '.json' in out_files:
@@ -482,14 +494,11 @@ def create_json_sidecars(outdir, modalities):
             dtype = modality[2]
 
             # if template exists, create template with appropriate name
-            dtype_path = os.path.join('bids_templates', dtype)
+            dtype_path = os.path.join('/app/bids_templates', dtype)
             if not os.path.isdir(dtype_path):
                 continue
 
-            if args.local:
-                template_dir = 'bids_templates/'
-            else:
-                template_dir = '/app/bids_templates/'
+            template_dir = '/app/bids_templates/'
 
             template_file = template_dir + dtype + '/' + mod + '.json'
 
@@ -575,7 +584,7 @@ if __name__ == '__main__':
         index = 0
         for session in session_string_sets[0].split(','):
 
-            if (args.session_use_index or not args.session_labels):
+            if args.session_use_index or not args.session_labels:
                 subdir_name = 'ses-' + str(index + 1)
             else:
                 subdir_name = 'ses-' + session_labels[index]
@@ -593,10 +602,7 @@ if __name__ == '__main__':
     print('Creating datatype subfolders...')
 
     # modality parameters now stored in txt file
-    if args.local:
-        modality_file = open("modalities.txt")
-    else:
-        modality_file = open("/app/modalities.txt")
+    modality_file = open("/app/modalities.txt")
 
     read_modality_file = csv.reader(modality_file, delimiter='\t')
 
@@ -619,10 +625,7 @@ if __name__ == '__main__':
 
     print('Creating BIDS entity dictionary...')
 
-    if args.local:
-        entity_file = open("entities.txt")
-    else:
-        entity_file = open("/app/entities.txt")
+    entity_file = open("/app/entities.txt")
 
     read_entity_file = csv.reader(entity_file, delimiter='\t')
 
@@ -684,7 +687,7 @@ if __name__ == '__main__':
         for s, d in zip(src, dest):
             log.write('\n' + s)
             log.write(' => ')
-            log.write(str.removeprefix(d, outdir + '\\') + '\n')
+            log.write(str.removeprefix(d, outdir)[1:] + '\n')
 
         num_files += len(src)
 
@@ -703,7 +706,7 @@ if __name__ == '__main__':
 
         log.write('\nCreated ' + str(num) + ' JSON sidecars from BIDS templates:\n')
         for d in dest:
-            log.write('\n' + str.removeprefix(d, outdir + '\\'))
+            log.write('\n' + str.removeprefix(d, outdir)[1:])
 
         print('Done.')
 
