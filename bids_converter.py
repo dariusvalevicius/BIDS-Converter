@@ -278,6 +278,16 @@ session_folders = []
 
 # Define helper functions
 
+def splitext_recurse(p):
+    """
+    Splitext function that can handle multiple extensions
+    """
+    base, ext = os.path.splitext(p)
+    if ext == '':
+        return (base,)
+    else:
+        return splitext_recurse(base) + (ext,)
+
 
 def create_datatype_dir(subject_folder, session_folders, datatype_exists, folder_name):
     """
@@ -416,10 +426,11 @@ def copy_modality_files(subject_folder, entity_dict_local, identifier, modality,
             total_entity_string += this_entities.get(entity_string, "")
 
         # Create file extension
-        ext = os.path.splitext(source_file)[1]
+        ext = splitext_recurse(os.path.split(source_file)[1])[1:]
+        #ext = os.path.splitext(source_file)[1]
 
         # Create final filename
-        dest_filename = os.path.split(subject_folder)[1] + '_' + total_entity_string + modality + ext
+        dest_filename = os.path.split(subject_folder)[1] + '_' + total_entity_string + modality + ''.join(ext)
         dest_filepath = os.path.join(subject_folder, this_entities.get(
             'ses', "").strip('_'), category, dest_filename)
 
@@ -480,12 +491,13 @@ def create_json_sidecars(outdir, modalities):
             if os.path.isdir(file):
                 continue
 
-            root, ext = os.path.splitext(file)
+            path, filename = os.path.split(file)
+            extsep = splitext_recurse(filename)
 
             # Skip if file is already a .JSON or if sister .JSON file already exists
-            if ext == '.json':
+            if '.json' in extsep:
                 continue
-            if root + '.json' in out_files:
+            if path + extsep[0] + '.json' in out_files:
                 continue
                 
             # if not, get datatype and modality
@@ -500,10 +512,10 @@ def create_json_sidecars(outdir, modalities):
 
             template_dir = '/app/bids_templates/'
 
-            template_file = template_dir + dtype + '/' + mod + '.json'
+            template_file = os.path.join(template_dir, dtype, mod) + '.json'
 
             if os.path.isfile(template_file):
-                dest_file = os.path.splitext(file)[0] + '.json'
+                dest_file = os.path.join(path, extsep[0]) + '.json'
                 shutil.copy(template_file, dest_file)
 
                 num += 1
