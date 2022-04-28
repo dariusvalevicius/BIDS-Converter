@@ -1,13 +1,13 @@
 {
     "name": "BIDS Converter",
     "description": "This tool is for converting arbitrary file collections of data (from ONE SUBJECT) into BIDS format.",
-    "tool-version": "v1.0",
+    "tool-version": "v1.1",
     "schema-version": "0.5",
     "descriptor-url": "https://github.com/dariusvalevicius/BIDS-Converter/blob/master/boutiques_descriptor/bids-converter.json",
-    "command-line": "python /app/bids_converter.py [INPUT] [OUTPUT_PREFIX] [SUBJECT] [SESSION] [SESSION_LABELS] [SESSION_USE_INDEX] [TASK] [TASK_LABELS] [RUN] [ACQ] [ACQ_LABELS] [CE] [CE_LABELS] [TRC] [TRC_LABELS] [REC] [REC_LABELS] [DIR] [DIR_LABELS] [MOD] [MOD_LABELS] [ECHO] [ECHO_VALUES] [FLIP] [FLIP_VALUES] [INV] [INV_VALUES] [MT] [MT_LABELS] [PART] [PART_LABELS] [RECORDING] [RECORDING_LABELS] [T1W] [T2W] [T1RHO] [T1MAP] [T2MAP] [T2STAR] [FLAIR] [FLASH] [PD] [PDMAP] [PDT2] [INPLANET1] [INPLANET2] [ANGIO] [BOLD] [BOLD_EVENTS] [PHYSIO] [STIM] [ASL] [ASL_M0SCAN] [ASL_CONTEXT] [ASL_LABELING] [DWI] [PHASEDIFF] [MAGNITUDE1] [MAGNITUDE2] [PHASE1] [PHASE2] [FIELDMAP] [EPI] [MEG] [MEG_CHANNELS] [MEG_EVENTS] [MEG_PHOTO] [MEG_FID] [MEG_FIDINFO] [MEG_HEADSHAPE] [EEG] [EEG_CHANNELS] [EEG_EVENTS] [EEG_ELECTRODES] [EEG_COORDSYSTEM] [EEG_PHOTO] [IEEG] [IEEG_CHANNELS] [IEEG_EVENTS] [IEEG_ELECTRODES] [IEEG_COORDSYSTEM] [IEEG_PHOTO] [PET] [PET_BLOOD] [BEH] [BEH_EVENTS] [NOSIDECARS]",
+    "command-line": "python /app/bids_converter.py [INPUT] [OUTPUT_PREFIX] [SUBJECT] [SESSION] [SESSION_LABELS] [SESSION_USE_INDEX] [TASK] [TASK_LABELS] [RUN] [ACQ] [ACQ_LABELS] [CE] [CE_LABELS] [TRC] [TRC_LABELS] [REC] [REC_LABELS] [DIR] [DIR_LABELS] [MOD] [MOD_LABELS] [ECHO] [ECHO_VALUES] [FLIP] [FLIP_VALUES] [INV] [INV_VALUES] [MT] [MT_LABELS] [PART] [PART_LABELS] [RECORDING] [RECORDING_LABELS] [T1W] [T2W] [T1RHO] [T1MAP] [T2MAP] [T2STAR] [FLAIR] [FLASH] [PD] [PDMAP] [PDT2] [INPLANET1] [INPLANET2] [ANGIO] [BOLD] [BOLD_EVENTS] [PHYSIO] [STIM] [ASL] [ASL_M0SCAN] [ASL_CONTEXT] [ASL_LABELING] [DWI] [PHASEDIFF] [MAGNITUDE1] [MAGNITUDE2] [PHASE1] [PHASE2] [FIELDMAP] [EPI] [MEG] [MEG_CHANNELS] [MEG_EVENTS] [MEG_PHOTO] [MEG_FID] [MEG_FIDINFO] [MEG_HEADSHAPE] [EEG] [EEG_CHANNELS] [EEG_EVENTS] [EEG_ELECTRODES] [EEG_COORDSYSTEM] [EEG_PHOTO] [IEEG] [IEEG_CHANNELS] [IEEG_EVENTS] [IEEG_ELECTRODES] [IEEG_COORDSYSTEM] [IEEG_PHOTO] [PET] [PET_BLOOD] [BEH] [BEH_EVENTS] [NOJSONS]",
     "container-image": {
         "type": "docker",
-        "image": "dvalev/bids-converter:version1.0"
+        "image": "dvalev/bids-converter:version1.1"
     },
     "inputs": [
         {
@@ -31,7 +31,7 @@
         {
             "id": "subject",
             "name": "Subject",
-            "description": "Subject number",
+            "description": "Strings identifying subject numbers. Use wildcards (*) to represent number locations in relation to the string.\nSeparate strings with commas. Include characters both before and after the numeric portion denoted by * (Unless the numeric portion comes at the beginning of the filename).",
             "optional": true,
             "type": "String",
             "value-key": "[SUBJECT]",
@@ -785,13 +785,13 @@
             "command-line-flag": "--beh_events"
         },
         {
-            "id": "nosidecars",
-            "name": "No Sidecars",
-            "description": "Do not create empty JSON sidecar templates",
+            "id": "nojsons",
+            "name": "No JSONs",
+            "description": "Do not create empty JSON sidecar and metadata templates",
             "optional": true,
             "type": "Flag",
-            "value-key": "[NOSIDECARS]",
-            "command-line-flag": "--nosidecars"
+            "value-key": "[NOJSONS]",
+            "command-line-flag": "--nojsons"
         }
     ],
     "groups": [
@@ -981,5 +981,14 @@
         "cpu-cores": 1,
         "ram": 1,
         "walltime-estimate": 60
+    },
+    "custom": {
+        "cbrain:author": "Darius Valevicius <darius.valevicius@mail.mcgill.ca>",
+        "cbrain:readonly-input-files": true,
+        "cbrain:integrator_modules": {
+            "BoutiquesOutputFileTypeSetter": {
+                "output_dir": "BidsDataset"
+            }
+        }
     }
 }
