@@ -35,7 +35,11 @@ if __name__ == '__main__':
     os.mkdir(outdir)
 
     # Make dataset description JSON template
-    if not args.nojsons:
+
+    dataset_json = glob(args.input + '/**/*' + 'dataset_description.json', recursive=True)
+    if dataset_json:
+        shutil.copy(dataset_json, outdir)
+    elif not args.nojsons:
         shutil.copy('/app/bids_templates/dataset_description.json', os.path.join(outdir, 'dataset_description.json'))
 
 
