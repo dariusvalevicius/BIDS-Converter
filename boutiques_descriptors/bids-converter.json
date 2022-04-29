@@ -1,6 +1,6 @@
 {
     "name": "BIDS Converter",
-    "description": "This tool is for converting arbitrary file collections of data (from ONE SUBJECT) into BIDS format.",
+    "description": "This tool is for converting arbitrary file collections of data into BIDS format.",
     "tool-version": "v1.1",
     "schema-version": "0.5",
     "descriptor-url": "https://github.com/dariusvalevicius/BIDS-Converter/blob/master/boutiques_descriptor/bids-converter.json",
