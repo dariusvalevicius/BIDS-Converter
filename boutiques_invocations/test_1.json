@@ -1,7 +1,7 @@
 {
     "input": "leiden_data",
-    "output_prefix": "test",
-    "subject": "Sappr*_,Sub*_,*PLCB,*SPINAAL",
+    "output_prefix": "output",
+    "subject": "Sappr*_,Sub*BOLD,Sub*_,*PLCB,*SPINAAL",
     "session": "Control,Spinal;PLCB,SPINAAL",
     "session_labels": "control,spinal",
     "t1w": "PACS",

@@ -1,14 +1,14 @@
 {
     "name": "BIDS Converter",
     "description": "This tool is for converting arbitrary file collections of data into BIDS format.",
-    "tool-version": "v1.1",
+    "tool-version": "v1.1.1",
     "schema-version": "0.5",
     "descriptor-url": "https://github.com/dariusvalevicius/BIDS-Converter/blob/master/boutiques_descriptor/bids-converter.json",
     "command-line": "python /app/bids_converter.py [INPUT] [OUTPUT_PREFIX] [SUBJECT] [SESSION] [SESSION_LABELS] [SESSION_USE_INDEX] [TASK] [TASK_LABELS] [RUN] [ACQ] [ACQ_LABELS] [CE] [CE_LABELS] [TRC] [TRC_LABELS] [REC] [REC_LABELS] [DIR] [DIR_LABELS] [MOD] [MOD_LABELS] [ECHO] [ECHO_VALUES] [FLIP] [FLIP_VALUES] [INV] [INV_VALUES] [MT] [MT_LABELS] [PART] [PART_LABELS] [RECORDING] [RECORDING_LABELS] [T1W] [T2W] [T1RHO] [T1MAP] [T2MAP] [T2STAR] [FLAIR] [FLASH] [PD] [PDMAP] [PDT2] [INPLANET1] [INPLANET2] [ANGIO] [BOLD] [BOLD_EVENTS] [PHYSIO] [STIM] [ASL] [ASL_M0SCAN] [ASL_CONTEXT] [ASL_LABELING] [DWI] [PHASEDIFF] [MAGNITUDE1] [MAGNITUDE2] [PHASE1] [PHASE2] [FIELDMAP] [EPI] [MEG] [MEG_CHANNELS] [MEG_EVENTS] [MEG_PHOTO] [MEG_FID] [MEG_FIDINFO] [MEG_HEADSHAPE] [EEG] [EEG_CHANNELS] [EEG_EVENTS] [EEG_ELECTRODES] [EEG_COORDSYSTEM] [EEG_PHOTO] [IEEG] [IEEG_CHANNELS] [IEEG_EVENTS] [IEEG_ELECTRODES] [IEEG_COORDSYSTEM] [IEEG_PHOTO] [PET] [PET_BLOOD] [BEH] [BEH_EVENTS] [NOJSONS]",
     "container-image": {
-        "image": "dvalev/bids-converter:version1.1",
+        "image": "dvalev/bids-converter:version1.1.1",
         "index": "docker://",
-        "type": "singularity"
+        "type": "docker"
     },
     "inputs": [
         {

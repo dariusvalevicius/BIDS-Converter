@@ -148,6 +148,9 @@ def copy_modality_files(args, subject_folder, subject_id, entity_dict_local, mod
         return False, False
 
     # Find all files with identifier
+    if identifier in subject_id:
+        identifier = ''
+
     source_files = glob(input_folder + '/**/*' + subject_id + '*' +
                         identifier + '*', recursive=True)
     if not source_files:
@@ -299,10 +302,19 @@ def create_subject_list(args):
             start = filename.find(before_num) + len(before_num)
             end = filename.find(after_num)
             number = filename[start:end]
+            # inner_string = filename[start:end]
+            
+            # number = ''.join(c for c in inner_string if c.isdigit())
+
+            # if not number:
+            #     msg = 'Error: Subject identifier "' + subject_string + '" failed to return number.'
+            #     raise Exception(msg)
 
             if not str.isdigit(number):
-                msg = 'Subject identifier "' + subject_string + '" returned non-numeric inner string.'
-                raise Exception(msg)
+                continue
+                # msg = 'Subject identifier "' + subject_string + '" returned non-numeric inner string.'
+                # raise Exception(msg)
+
 
             subject_id = before_num + number + after_num
 
